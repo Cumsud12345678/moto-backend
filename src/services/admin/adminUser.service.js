@@ -135,6 +135,15 @@ const deleteDeletedUser = async (id) => {
   return true
 }
 
+const getDeletedUser = async (query) => {
+  const filter = {}
+  if(query.id) filter._id = query.id
+  if(query.userId) filter.user_id = query.userId;
+  if(query.phone) filter.phone = query.phone
+
+  return await DeletedUser.find(filter)
+}
+
 module.exports = {
   getUsers,
   getUser,
@@ -147,5 +156,7 @@ module.exports = {
   getUserStats,
   
   getDeletedUsers,
-  deleteDeletedUser
+  deleteDeletedUser,
+
+  getDeletedUser
 }

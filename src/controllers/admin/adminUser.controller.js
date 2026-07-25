@@ -123,6 +123,15 @@ const deleteDeletedUser = async (req, res, next) => {
   }
 }
 
+const getDeletedUser = async (req, res, next) => {
+  try{
+    const data = await adminUserService.getDeletedUser(req.query)
+    res.status(200).json({ success: true, data: data })
+  }catch(err){
+    next(err)
+  }
+}
+
 module.exports = {
   getUsers,
   getUser,
@@ -135,5 +144,7 @@ module.exports = {
   getUserStats,
 
   getDeletedUsers,
-  deleteDeletedUser
+  deleteDeletedUser,
+
+  getDeletedUser
 }

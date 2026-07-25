@@ -13,7 +13,9 @@ const {
   getUserStats,
 
   getDeletedUsers,
-  deleteDeletedUser
+  deleteDeletedUser,
+
+  getDeletedUser
 } = require('../../controllers/admin/adminUser.controller');
 
 router.get('/', getUsers)
@@ -27,6 +29,7 @@ router.put('/update', updateUser)
 router.get('/stats', getUserStats)
 
 router.get('/deleted', getDeletedUsers)
+router.get('/deleted/search', getDeletedUser)
 router.delete('/deleted/:id', deleteDeletedUser)
 
 router.delete('/:id', deleteUser)
