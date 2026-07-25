@@ -5,8 +5,16 @@ const DeletedUser = require('../../models/delete.user.model')
 const path = require('path')
 const fs = require('fs')
 
-const getUsers = async () => {
-  return await User.find().populate('productCount').limit(10)
+const getUsers = async (skip, limit) => {
+  const [users, total] = await Promise.all([
+    User.find().limit(limit).skip(skip).populate('productCount'),
+    User.countDocuments()
+  ])
+
+  return {
+    users,
+    total: Math.ceil(total / limit)
+  }
 }
 
 const getUser = async (query) => {
