@@ -10,7 +10,10 @@ dayjs.extend(timezone);
 
 const getProducts = async (req, res, next) => {
   try{
-    const products = await adminProductService.getProducts()
+    const page = Number(req.params.page) || 1
+    const limit = 2
+    const skip = (page - 1) * limit
+    const products = await adminProductService.getProducts(skip, limit)
     res.status(200).json({success: true, data: products})
   }catch(err){
     next(err)
@@ -90,9 +93,10 @@ const getProductStats = async (req, res, next) => {
 
 const getDeletedProducts = async (req, res, next) => {
   try{
-    console.log('data')
-    const data = await adminProductService.getDeletedProducts()
-    
+    const page = Number(req.query.page) || 1
+    const limit = 1
+    const skip = (page - 1) * limit
+    const data = await adminProductService.getDeletedProducts(skip, limit)
     res.status(200).json({success: true, data: data})
   }catch(err){
     next(err)

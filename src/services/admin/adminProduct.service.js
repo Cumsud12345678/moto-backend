@@ -3,19 +3,20 @@ const DeletedProduct = require('../../models/delete.product.model')
 const path = require('path')
 const fs = require('fs/promises')
 
-const getProducts = async () => {
-  return await Product.find()
-  .populate('make')
-  .populate('model')
-  .populate('category')
-  .populate('fuel')
-  .populate('speed')
-  .populate('city')
-  .populate('color')
-  .populate('status')
-  .populate('equipments')
-  .populate('user')
-  .limit(10)
+const getProducts = async (skip, limit) => {
+  const [products, total] = await Promise.all([
+    Product.find().skip(skip).limit(limit)
+      .populate('make').populate('model')
+      .populate('category').populate('fuel')
+      .populate('speed').populate('city')
+      .populate('color').populate('status')
+      .populate('equipments').populate('user'),
+    Product.countDocuments()
+  ])
+  return {
+    products,
+    total: Math.ceil(total / limit)
+  }
 }
 
 const getProduct = async (query) => {
@@ -118,8 +119,15 @@ const getProductStats = async (startOfDay, onWeekAgo, oneMonthAgo) => {
   }
 }
 
-const getDeletedProducts = async () => {
-  return await DeletedProduct.find().populate('user').limit(10)
+const getDeletedProducts = async (skip, limit) => {
+  const [products, total] = await Promise.all([
+    DeletedProduct.find().skip(skip).limit(limit).populate('user'),
+    DeletedProduct.countDocuments()
+  ])
+  return {
+    products,
+    total: Math.ceil(total / limit)
+  }
 }
 
 const deleteDeletedProducts = async (id) => {

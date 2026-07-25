@@ -118,8 +118,16 @@ const getUserStats = async (startOfDay, onWeekAgo, oneMonthAgo) => {
   }
 }
 
-const getDeletedUsers = async () => {
-  return await DeletedUser.find()
+const getDeletedUsers = async (skip, limit) => {
+  const [users, total] = await Promise.all([
+    DeletedUser.find().skip(skip).limit(limit),
+    DeletedUser.countDocuments()
+  ])
+  
+  return {
+    users, 
+    total: Math.ceil(total / limit)
+  }
 }
 
 const deleteDeletedUser = async (id) => {

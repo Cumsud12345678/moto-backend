@@ -104,7 +104,10 @@ const getUserStats = async (req, res, next) => {
 
 const getDeletedUsers = async (req, res, next) => {
   try{
-    const data = await adminUserService.getDeletedUsers()
+    const limit = 2
+    const page = Number(req.query.page) || 1
+    const skip = (page - 1) * limit
+    const data = await adminUserService.getDeletedUsers(skip, limit)
     res.status(200).json({success: true, data: data})
   }catch(err){
     next(err)
