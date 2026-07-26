@@ -15,33 +15,25 @@ const path = require('path')
 const mongoose = require('mongoose')
 
 // HOME PAGE
-const getAllProduct = async (userId) => {
+const getAllProduct = async (userId, page = 1, limit = 10) => {
+  const skip = (page - 1) * limit
+
   const pipeline = [
     { $match: { isActive: true } },
-    { $sample: { size: 10 } }, // random istəsən $sample: { size: 10 } yaz
+    { $sort: { createdAt: -1 } },   // ✅ təsadüfi yerinə sıralı
+    { $skip: skip },
+    { $limit: limit },
     {
       $project: {
         price: 1, year: 1, mileage: 1, volume: 1,
         make: 1, model: 1, city: 1, images: 1
       }
     },
-    {
-      $lookup: {
-        from: 'makes', localField: 'make', foreignField: '_id', as: 'make'
-      }
-    },
+    { $lookup: { from: 'makes', localField: 'make', foreignField: '_id', as: 'make' } },
     { $unwind: { path: '$make', preserveNullAndEmptyArrays: true } },
-    {
-      $lookup: {
-        from: 'models', localField: 'model', foreignField: '_id', as: 'model'
-      }
-    },
+    { $lookup: { from: 'models', localField: 'model', foreignField: '_id', as: 'model' } },
     { $unwind: { path: '$model', preserveNullAndEmptyArrays: true } },
-    {
-      $lookup: {
-        from: 'cities', localField: 'city', foreignField: '_id', as: 'city'
-      }
-    },
+    { $lookup: { from: 'cities', localField: 'city', foreignField: '_id', as: 'city' } },
     { $unwind: { path: '$city', preserveNullAndEmptyArrays: true } },
   ]
 
@@ -52,32 +44,26 @@ const getAllProduct = async (userId) => {
           from: 'favoris',
           let: { productId: '$_id' },
           pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$product', '$$productId'] },
-                    { $eq: ['$user', new mongoose.Types.ObjectId(userId)] }
-                  ]
-                }
-              }
-            }
+            { $match: { $expr: { $and: [
+              { $eq: ['$product', '$$productId'] },
+              { $eq: ['$user', new mongoose.Types.ObjectId(userId)] }
+            ]}}}
           ],
           as: 'likeInfo'
         }
       },
-      {
-        $addFields: {
-          is_liked: { $gt: [{ $size: '$likeInfo' }, 0] }
-        }
-      },
+      { $addFields: { is_liked: { $gt: [{ $size: '$likeInfo' }, 0] } } },
       { $project: { likeInfo: 0 } }
     )
   } else {
     pipeline.push({ $addFields: { is_liked: false } })
   }
 
-  return await Product.aggregate(pipeline)
+  const products = await Product.aggregate(pipeline)
+  const total = await Product.countDocuments({ isActive: true })
+  const hasMore = skip + products.length < total
+
+  return { products, hasMore }
 }
 
 
