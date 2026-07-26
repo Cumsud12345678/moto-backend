@@ -145,11 +145,14 @@ const getUserProducts = async (req, res, next) => {
 
 const updateProduct = async (req, res, next) => {
   try {
-    const productId = req.params.id // ya da req.user.id — öz məntiqinə uyğun saxla
+    const productId = req.params.id
+
     const product = await productService.getProductDetails(productId)
     if (!product) {
       return res.status(404).json({ success: false, message: 'Elan tapilmadi' })
     }
+
+    // 🔴 IDOR düzəlişi — sahiblik yoxlanılmalıdır
     if (product.user._id.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: 'Icazeniz yoxdur' })
     }
@@ -162,15 +165,41 @@ const updateProduct = async (req, res, next) => {
 
     // multer-dən gələn yeni faylların adları
     const newImageNames = req.files ? req.files.map(f => f.filename) : []
-
     const finalImages = [...remainingOldImages, ...newImageNames]
+
+    // ✅ Validasiya bloku
+    const { price, mileage, description, fuel, speed, city, color } = req.body
+
+    if (!price || Number(price) <= 0) {
+      return res.status(400).json({ success: false, message: 'Qiymet duzgun deyil' })
+    }
+    if (mileage === undefined || mileage === null || mileage === '' || Number(mileage) < 0) {
+      return res.status(400).json({ success: false, message: 'Yurush duzgun deyil' })
+    }
+    if (!description || description.trim().length === 0) {
+      return res.status(400).json({ success: false, message: 'Aciqlama yazilmalidir' })
+    }
+    if (finalImages.length === 0) {
+      return res.status(400).json({ success: false, message: 'En azi 1 sekil olmalidir' })
+    }
+    if (!fuel) {
+      return res.status(400).json({ success: false, message: 'Yanacaq novu secilmelidir' })
+    }
+    if (!speed) {
+      return res.status(400).json({ success: false, message: 'Suretler qutusu secilmelidir' })
+    }
+    if (!color) {
+      return res.status(400).json({ success: false, message: 'Reng secilmelidir' })
+    }
+    if (!city) {
+      return res.status(400).json({ success: false, message: 'Seher secilmelidir' })
+    }
 
     const updateData = {
       ...req.body,
       images: finalImages,
     }
 
-    // remainingOldImages artıq lazım deyil, images-ə birləşdi
     delete updateData.remainingOldImages
 
     const updatedProduct = await productService.updateProduct(productId, updateData)
@@ -193,6 +222,7 @@ const updateProduct = async (req, res, next) => {
         }
       })
     })
+
     res.status(200).json({ success: true, data: updatedProduct })
   } catch (err) {
     next(err)
