@@ -63,6 +63,36 @@ const getSimilarProducts = async (req, res, next) => {
 // NEW PRODUCT
 const createProduct = async (req, res, next) => {
   try{
+    const {
+      price, year, mileage, description, volume, power,
+      make, model, category, fuel, speed, city, color, status
+    } = req.body
+
+    if(!make || !model || !year || !volume){
+      return res.status(400).json({ success: false, message: 'Marka, model, il ve hecm melumatlari tam deyil' })
+    }
+    if(!category || !status || !color || !fuel || !speed){
+      return res.status(400).json({ success: false, message: 'Butun kateqoriya/reng/yanacaq/suretler qutusu sahələri doldurulmalidir' })
+    }
+    if(!city){
+      return res.status(400).json({ success: false, message: 'Seher secilmelidir' })
+    }
+    if(!price || Number(price) <= 0){
+      return res.status(400).json({ success: false, message: 'Qiymet duzgun deyil' })
+    }
+    if(!power || Number(power) <= 0){
+      return res.status(400).json({ success: false, message: 'Muherrikin gucu duzgun deyil' })
+    }
+    if(mileage === undefined || mileage === null || Number(mileage) < 0){
+      return res.status(400).json({ success: false, message: 'Yurush duzgun deyil' })
+    }
+    if(!description || description.trim().length === 0){
+      return res.status(400).json({ success: false, message: 'Aciqlama yazilmalidir' })
+    }
+    if(!req.files || req.files.length === 0){
+      return res.status(400).json({ success: false, message: 'En azi 1 sekil elave edin' })
+    }
+
     const imageUrls = req.files.map(file => file.filename);
     const product = await productService.createProduct({
       ...req.body,
