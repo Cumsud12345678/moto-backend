@@ -1,7 +1,9 @@
 const Product = require('../../models/product.model')
+const User = require('../../models/user.model')
 const DeletedProduct = require('../../models/delete.product.model')
 const path = require('path')
 const fs = require('fs/promises')
+const { default: mongoose } = require('mongoose')
 
 const getProducts = async (skip, limit) => {
   const [products, total] = await Promise.all([
@@ -24,8 +26,6 @@ const getProduct = async (query) => {
   const filter = {}
 
   if(id) filter._id = id
-
-  console.log(id)
 
   return await Product.find(filter)
   .populate('make')
@@ -130,6 +130,25 @@ const getDeletedProducts = async (skip, limit) => {
   }
 }
 
+const getDeletedProduct = async (query) => {
+  const filter = {}
+  if(query.productID) filter.product_id = query.productID;
+  if(query.userID) {
+    if (query.userID && !mongoose.Types.ObjectId.isValid(query.userID)) {
+      throw new Error("User ID is not valid");
+    }
+    filter.user = query.userID;
+  }
+  if (query.userPhone) {
+    console.log(query.userPhone)
+    const user = await User.findOne({ phone: Number(query.userPhone) });
+    if (!user) return [];
+    return await DeletedProduct.find({ user: user._id }).populate('user');
+  }
+
+  return await DeletedProduct.find(filter).populate('user')
+}
+
 const deleteDeletedProducts = async (id) => {
   await DeletedProduct.findByIdAndDelete(id)
   return true
@@ -146,5 +165,6 @@ module.exports = {
   getProductStats,
 
   getDeletedProducts,
+  getDeletedProduct,
   deleteDeletedProducts
 }

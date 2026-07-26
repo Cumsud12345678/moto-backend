@@ -12,6 +12,7 @@ const {
   getProductStats,
 
   getDeletedProducts,
+  getDeletedProduct,
   deleteDeletedProducts
 } = require('../../controllers/admin/adminProduct.controller');
 
@@ -22,7 +23,9 @@ router.put('/deactive/:id', deactiveProduct)
 router.put('/active/:id', activeProduct)
 router.delete('/delete/:id', deleteProduct)
 router.get('/stats', getProductStats)
+
 router.get('/deleted', getDeletedProducts)
+router.get('/deleted/search', getDeletedProduct)
 router.delete('/deleted/:id', deleteDeletedProducts)
 
 module.exports = router

@@ -103,6 +103,15 @@ const getDeletedProducts = async (req, res, next) => {
   }
 }
 
+const getDeletedProduct = async (req, res, next) => {
+  try{
+    const data = await adminProductService.getDeletedProduct(req.query)
+    res.status(200).json({success: true, data: data})
+  }catch(err){
+    next(err)
+  }
+}
+
 const deleteDeletedProducts = async (req, res, next) => {
   try{
     const success = await adminProductService.deleteDeletedProducts(req.params.id)
@@ -124,5 +133,6 @@ module.exports = {
   getProductStats,
 
   getDeletedProducts,
+  getDeletedProduct,
   deleteDeletedProducts
 }
