@@ -125,7 +125,6 @@ const getFilteredProducts = async (query) => {
     .populate({ path: 'model', select: 'label' })
     .populate('city')
   
-  console.log('result:', result)
   return result
 }
 
@@ -159,11 +158,8 @@ const getSimilarProducts = async (currentProduct, limit = 8) => {
   .populate('city')
   .limit(limit)
 
-  console.log(similar.length)
-
   // Make ye gore
   if(similar.length < limit) {
-    console.log('make')
     const more = await Product.find({
       _id: { $ne: _id, $nin: similar.map(p => p._id) },
       make,
@@ -178,7 +174,6 @@ const getSimilarProducts = async (currentProduct, limit = 8) => {
 
   // Price && Category
   if(similar.length < limit){
-    console.log('category price')
     const priceRange = { $gte: price * 0.7, $lte: price * 1.7 }
     const more = await Product.find({
       _id: { $ne: _id, $nin: similar.map(p => p._id) },

@@ -61,8 +61,6 @@ const register = async (req, res, next) => {
 
 const registerValidate = async (req, res, next) => {
   try{
-
-    console.log(req.body)
     const data = await redis.get(`register:${req.body.phone}`)
     if(!data){
       return res.status(400).json({
@@ -165,7 +163,6 @@ const login = async (req, res, next) => {
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
 
-    console.log(req.body.phone)
     if(otp){
       console.log(otp)
       await redis.set(
@@ -190,7 +187,6 @@ const login = async (req, res, next) => {
 
 const loginValidate = async (req, res, next) => {
   try{
-    console.log(req.body.phone)
     const data = await redis.get(`login:${req.body.phone}`)
     
     if(!data){

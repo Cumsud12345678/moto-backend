@@ -70,7 +70,6 @@ const resetWarningUser = async (req, res, next) => {
 
 const deleteUser = async (req, res, next) => {
   try{
-    console.log(req.body)
     const deletedUser = await adminUserService.deleteUser(req.params.id, req.body.desc)
     res.status(200).json({ success: true })
   }catch(err){

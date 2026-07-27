@@ -140,7 +140,6 @@ const getDeletedProduct = async (query) => {
     filter.user = query.userID;
   }
   if (query.userPhone) {
-    console.log(query.userPhone)
     const user = await User.findOne({ phone: Number(query.userPhone) });
     if (!user) return [];
     return await DeletedProduct.find({ user: user._id }).populate('user');

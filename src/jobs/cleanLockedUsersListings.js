@@ -17,8 +17,6 @@ async function cleanExpiredLockedUsers() {
   const userIds = expiredUsers.map(u => u._id);
 
   const result = await Product.deleteMany({user: { $in: userIds }})
-
-  console.log(`${userIds.length} kilidli istifadəçinin elanları silindi (${result.deletedCount} elan)`);
 }
 
 cron.schedule('0 * * * *', cleanExpiredLockedUsers);
