@@ -229,7 +229,23 @@ const updateProduct = async (req, res, next) => {
   }
 }
 
+const sitemap = async (req, res) => {
+  const products = await Product.find({ isActive: true }).select('_id updatedAt')
+  const urls = products.map(p => `
+    <url>
+      <loc>https://sənin-domenin.com/elanlar/${p._id}</loc>
+      <lastmod>${p.updatedAt.toISOString()}</lastmod>
+    </url>
+  `).join('')
 
+  res.header('Content-Type', 'application/xml')
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      <url><loc>https://sənin-domenin.com/</loc></url>
+      <url><loc>https://sənin-domenin.com/autos</loc></url>
+      ${urls}
+    </urlset>`)
+}
 
 
 module.exports = {

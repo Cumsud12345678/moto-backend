@@ -32,7 +32,7 @@ app.use(cors({
   origin: [
     "http://localhost:5173",
     "http://192.168.100.29:5173",
-    "https://cosmetic-bands-quality-managing.trycloudflare.com",
+    "https://dir-indexed-five-prep.trycloudflare.com",
     process.env.FRONTEND_URL
   ],
   credentials: true
