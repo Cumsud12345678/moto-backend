@@ -24,9 +24,15 @@ const isAdmin = require('./middlewares/isAdmin.middleware')
 // Elave
 const path = require('path')
 const cookieParser = require('cookie-parser')
+const rateLimit = require('express-rate-limit')
 require('dotenv').config()
 require('./jobs/cleanLockedUsersListings');
 require('./jobs/cleanDeactiveProductListings');
+
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300
+})
 
 app.use(cors({
   origin: [
@@ -44,6 +50,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(cookieParser())
 
 mongoDB()
+
+app.use('/api', globalLimiter)
 
 app.use('/api/users', userRouter)
 app.use('/api/products', productRouter)

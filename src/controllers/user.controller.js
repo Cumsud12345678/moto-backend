@@ -10,19 +10,19 @@ const register = async (req, res, next) => {
   try{
     
     if(!req.body.phone || !req.body.name){
-      return res.status(400).json({success: false, message: 'Melumat tam deyil'})
+      return res.status(400).json({success: false, message: 'Məlumat tam deyil'})
     }
 
     const user = await userService.getUser(req.body.phone)
     if(user){
-      return res.status(409).json({success: false, message: 'Nomre isdifade olunur'})
+      return res.status(409).json({success: false, message: 'Nömrə isdifadə olunur'})
     }
 
     const existing = await redis.get(`register:${req.body.phone}`)
 
     if(existing){
       const ttl = await redis.ttl(`register:${req.body.phone}`)
-      return res.status(429).json({success: false, message: `${ttl} saniye sonra tekrar deneyin`})
+      return res.status(429).json({success: false, message: `${ttl} saniyə sonra tekrar dənəyin`})
     }
 
     const attemptsKey = `register-attempts:${req.body.phone}`
@@ -31,7 +31,7 @@ const register = async (req, res, next) => {
       await redis.expire(attemptsKey, 3600)
     }
     if(attempts > 5){
-      return res.status(429).json({success: false, message: 'Cox sayida deneme 1 saat sonra yeniden cehd edin'})
+      return res.status(429).json({success: false, message: 'Çox sayıda cəhd 1 saat sonra yenidən cəhd edin'})
     }
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
@@ -49,9 +49,9 @@ const register = async (req, res, next) => {
           EX: 120
         }
       )
-      res.status(200).json({ success: true, message: 'Kod gonderildi' })
+      res.status(200).json({ success: true, message: 'Kod göndərildi' })
     } else {
-      res.status(500).json({ success: false, message: 'Kod gonderilmedi' })
+      res.status(500).json({ success: false, message: 'Kod göndərilmədi' })
     }
     
   }catch(err){
@@ -104,7 +104,7 @@ const registerValidate = async (req, res, next) => {
         return res.status(200).json({ success: true, id: newUser._id })
       } else {
         
-        res.status(500).json({ success: false, message: 'Bir xeta bas verdi' })
+        res.status(500).json({ success: false, message: 'Bir xəta baş verdi' })
       }
 
     } else {
@@ -117,9 +117,9 @@ const registerValidate = async (req, res, next) => {
       if (fails > 5) {
         await redis.del(`register:${req.body.phone}`)
         await redis.del(failKey)
-        return res.status(429).json({ success: false, message: 'Cox sayda sehv cehd, yeniden qeydiyyatdan kecin' })
+        return res.status(429).json({ success: false, message: 'Çox sayda səhf cəhd, yenidən qeydiyyatdan keçin' })
       }
-      res.status(401).json({ success: false, message: 'Kod sefdir' })
+      res.status(401).json({ success: false, message: 'Kod səfdir' })
     }
 
   }catch(err){
@@ -133,22 +133,22 @@ const login = async (req, res, next) => {
   try{
 
     if(!req.body.phone || req.body.phone.length !== 9){
-      return res.status(401).json({success: false, message: 'Melumat eksikdir'})
+      return res.status(401).json({success: false, message: 'Məlumat əksikdir'})
     }
     const user = await userService.getUser(req.body.phone)
 
     if(!user){
-      return res.status(404).json({success: false, message: 'Isdifadeci tapilmadi'})
+      return res.status(404).json({success: false, message: 'İsdifadəçi tapilmadı'})
     }
 
     if(user.isLock){
-      return res.status(409).json({success: false, message: 'Siz qaydalari cox pozduqunuza gore uzaqlasdirilmisiz!!!'})
+      return res.status(409).json({success: false, message: 'Siz qaydaları çox pozduqunuza görə uzaqlaşdırılmısız!!!'})
     }
 
     const existing = await redis.get(`login:${req.body.phone}`)
     if(existing){
       const ttl = await redis.ttl(`login:${req.body.phone}`)
-      return res.status(429).json({success: false, message: `${ttl} saniye sonra tekrar deneyin`})
+      return res.status(429).json({success: false, message: `${ttl} saniyə sonra tekrar dənəyin`})
     }
 
     const attemptsKey = `login-attempts:${req.body.phone}`
@@ -158,7 +158,7 @@ const login = async (req, res, next) => {
     }
     
     if(attempts > 5){
-      return res.status(429).json({success: false, message: 'Cox yoxladiniz 1 saat sonra yeniden cehd edin'})
+      return res.status(429).json({success: false, message: 'Çox yoxladınız 1 saat sonra yenidən cəhd edin'})
     }
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
@@ -175,9 +175,9 @@ const login = async (req, res, next) => {
           EX: 120
         }
       )
-      res.status(200).json({ success: true, message: 'Kod gonderildi' })
+      res.status(200).json({ success: true, message: 'Kod göndərildi' })
     }else {
-      res.status(500).json({ success: false, message: 'Kod gonderilmedi birdaha cehd edin' })
+      res.status(500).json({ success: false, message: 'Kod göndərilmədi birdaha cəhd edin' })
     }
 
   }catch(err){
@@ -234,9 +234,9 @@ const loginValidate = async (req, res, next) => {
       }
 
       if(fails > 5){
-        return res.status(429).json({success: false, message: 'Cox sayda uqursuz cehd biraz sonra yeniden deneyin'})
+        return res.status(429).json({success: false, message: 'Çox sayda uğursuz cəhd biraz sonra yenidən cəhd edin'})
       }
-      res.status(401).json({ success: false, message: 'Kod sefdir' })
+      res.status(401).json({ success: false, message: 'Kod səfdir' })
     }
   }catch(err){
     next(err)
@@ -283,7 +283,7 @@ const getMe = async (req, res, next) => {
   try{
     const user = await userService.getUserById(req.user.id)
     if(!user){
-      return res.status(404).json({success: false, message: 'Isdifadeci tapilmadi'})
+      return res.status(404).json({success: false, message: 'İstifadəçi tapılmadı'})
     }
 
     return res.status(200).json({
@@ -356,7 +356,7 @@ const setFavori = async (req, res, next) => {
       success = await userService.setFavori({data: data, type: 'string'})
     }
     
-    res.status(200).json({ success, message: 'Basariyla eklendi' })
+    res.status(200).json({ success, message: 'Uğurla əlavə olundu' })
 
   }catch(err){
     next(err)
@@ -371,7 +371,7 @@ const deleteFavori = async (req, res, next) => {
     }
 
     const success = await userService.deleteFavori(data)
-    res.status(200).json({ success, message: 'Basariyla silindi' })
+    res.status(200).json({ success, message: 'Uğurla silindi' })
   }catch(err){
     next(err)
   }

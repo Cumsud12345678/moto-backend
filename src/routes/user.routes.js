@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middlewares/auth.middleware');
 const upload = require('../middlewares/upload.middleware');
+const { otpLimiter, verifyLimiter } = require('../middlewares/rateLimit.middleware');
 
 const {
   register,
@@ -20,12 +21,12 @@ const {
 } = require('../controllers/user.controller');
 
 // REGISTER 
-router.post('/register', register);
-router.post('/register/verify', registerValidate);
+router.post('/register', otpLimiter, register);
+router.post('/register/verify', verifyLimiter, registerValidate);
 
 // LOGIN
-router.post('/login', login);
-router.post('/login/verify', loginValidate);
+router.post('/login', otpLimiter, login);
+router.post('/login/verify', verifyLimiter, loginValidate);
 
 // LOGOUT
 router.get('/logout', logout);

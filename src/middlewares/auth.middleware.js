@@ -7,7 +7,7 @@ const auth = async (req, res, next) => {
     const token = req.cookies.token
 
     if (!token) {
-      return res.status(401).json({ success: false, message: 'Giris teleb olunur' })
+      return res.status(401).json({ success: false, message: 'Giriş tələb olunur' })
     }
 
     const isBlacklisted = await redis.get(`blacklist:${token}`)
@@ -27,7 +27,7 @@ const auth = async (req, res, next) => {
     next()
 
   } catch (err) {
-    return res.status(401).json({ success: false, message: 'Token yararsizdir ve ya vaxti bitib' })
+    return res.status(401).json({ success: false, message: 'Token yararsızdır və ya vaxtı bitib' })
   }
 }
 

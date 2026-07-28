@@ -41,7 +41,7 @@ const getUserProducts = async (req, res, next) => {
 const deactiveProduct = async (req, res, next) => {
   try{
     const updatedProduct = await adminProductService.deactiveProduct(req.params.id)
-    if(updatedProduct.isActive) return res.status(500).json({ success: false, message: 'Bir xeta bas verdi' })
+    if(updatedProduct.isActive) return res.status(500).json({ success: false, message: 'Bir xəta baş verdi' })
     res.status(200).json({ success: true })
   }catch(err){
     next(err)
@@ -51,7 +51,7 @@ const deactiveProduct = async (req, res, next) => {
 const activeProduct = async (req, res, next) => {
   try{
     const updatedProduct = await adminProductService.activeProduct(req.params.id)
-    if(!updatedProduct.isActive) return res.status(500).json({ success: false, message: 'Bir xeta bas verdi' })
+    if(!updatedProduct.isActive) return res.status(500).json({ success: false, message: 'Bir xəta baş verdi' })
     res.status(200).json({ success: true })
   }catch(err){
     next(err)

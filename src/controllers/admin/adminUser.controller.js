@@ -52,7 +52,7 @@ const lockUser = async (req, res, next) => {
 const unlockUser = async (req, res, next) => {
   try{
     const unlockedUser = await adminUserService.unlockUser(req.params.id)
-    if(unlockedUser.isLock) return res.status(500).json({success: false, message: 'Bir xeta olustu'})
+    if(unlockedUser.isLock) return res.status(500).json({success: false, message: 'Bir xəta baş verdi'})
     res.status(200).json({ success: true })
   }catch(err) {
     next(err)

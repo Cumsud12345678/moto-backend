@@ -69,28 +69,28 @@ const createProduct = async (req, res, next) => {
     } = req.body
 
     if(!make || !model || !year || !volume){
-      return res.status(400).json({ success: false, message: 'Marka, model, il ve hecm melumatlari tam deyil' })
+      return res.status(400).json({ success: false, message: 'Marka, model, il və həcm məlumatlarıı tam deyil' })
     }
     if(!category || !status || !color || !fuel || !speed){
-      return res.status(400).json({ success: false, message: 'Butun kateqoriya/reng/yanacaq/suretler qutusu sahələri doldurulmalidir' })
+      return res.status(400).json({ success: false, message: 'Bütün kateqoriya/rəng/yanacaq/sürətlər qutusu sahələri doldurulmalıdır' })
     }
     if(!city){
-      return res.status(400).json({ success: false, message: 'Seher secilmelidir' })
+      return res.status(400).json({ success: false, message: 'Şəhər seçilməlidir' })
     }
     if(!price || Number(price) <= 0){
-      return res.status(400).json({ success: false, message: 'Qiymet duzgun deyil' })
+      return res.status(400).json({ success: false, message: 'Qiymət düzgün deyil' })
     }
     if(!power || Number(power) <= 0){
-      return res.status(400).json({ success: false, message: 'Muherrikin gucu duzgun deyil' })
+      return res.status(400).json({ success: false, message: 'Mühərrikin gücü düzgün deyil' })
     }
     if(mileage === undefined || mileage === null || Number(mileage) < 0){
-      return res.status(400).json({ success: false, message: 'Yurush duzgun deyil' })
+      return res.status(400).json({ success: false, message: 'Yürüş düzgün deyil' })
     }
     if(!description || description.trim().length === 0){
-      return res.status(400).json({ success: false, message: 'Aciqlama yazilmalidir' })
+      return res.status(400).json({ success: false, message: 'Açıqlama yazılmalıdır' })
     }
     if(!req.files || req.files.length === 0){
-      return res.status(400).json({ success: false, message: 'En azi 1 sekil elave edin' })
+      return res.status(400).json({ success: false, message: 'Ən azı 1 şəkil əlavə edin' })
     }
 
     const imageUrls = req.files.map(file => file.filename);
@@ -121,7 +121,7 @@ const deleteProduct = async (req, res, next) => {
   try{
     const product = await productService.getProductDetails(req.params.id)
     if (product.user._id.toString() !== req.user.id) {
-      return res.status(403).json({ success: false, message: 'Icazeniz yoxdur' })
+      return res.status(403).json({ success: false, message: 'İcazəniz yoxdur' })
     }
     const message = await productService.deleteProduct(req.params.id)
     res.status(200).json({ success: true, message: message })
@@ -133,7 +133,7 @@ const deleteProduct = async (req, res, next) => {
 const getUserProducts = async (req, res, next) => {
   try{
     if(req.user.id !== req.params.id){
-      return res.status(403).json({ success: false, message: 'Icazeniz yoxdur' })
+      return res.status(403).json({ success: false, message: 'İcazəniz yoxdur' })
     }
     const data = await productService.getUserProducts(req.params.id)
     res.status(200).json({ success: true, data: data })
@@ -149,12 +149,12 @@ const updateProduct = async (req, res, next) => {
 
     const product = await productService.getProductDetails(productId)
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Elan tapilmadi' })
+      return res.status(404).json({ success: false, message: 'Elan tapılmadı' })
     }
 
     // 🔴 IDOR düzəlişi — sahiblik yoxlanılmalıdır
     if (product.user._id.toString() !== req.user.id) {
-      return res.status(403).json({ success: false, message: 'Icazeniz yoxdur' })
+      return res.status(403).json({ success: false, message: 'İcazəniz yoxdur' })
     }
 
     // remainingOldImages tək string ola bilər (1 dənə qalıbsa), array-ə çevir
@@ -171,28 +171,28 @@ const updateProduct = async (req, res, next) => {
     const { price, mileage, description, fuel, speed, city, color } = req.body
 
     if (!price || Number(price) <= 0) {
-      return res.status(400).json({ success: false, message: 'Qiymet duzgun deyil' })
+      return res.status(400).json({ success: false, message: 'Qiymət düzgün deyil' })
     }
     if (mileage === undefined || mileage === null || mileage === '' || Number(mileage) < 0) {
-      return res.status(400).json({ success: false, message: 'Yurush duzgun deyil' })
+      return res.status(400).json({ success: false, message: 'Yürüş düzgün deyil' })
     }
     if (!description || description.trim().length === 0) {
-      return res.status(400).json({ success: false, message: 'Aciqlama yazilmalidir' })
+      return res.status(400).json({ success: false, message: 'Açıqlama yazılmalıdır' })
     }
     if (finalImages.length === 0) {
       return res.status(400).json({ success: false, message: 'En azi 1 sekil olmalidir' })
     }
     if (!fuel) {
-      return res.status(400).json({ success: false, message: 'Yanacaq novu secilmelidir' })
+      return res.status(400).json({ success: false, message: 'Yanacaq növü seçilməlidir' })
     }
     if (!speed) {
-      return res.status(400).json({ success: false, message: 'Suretler qutusu secilmelidir' })
+      return res.status(400).json({ success: false, message: 'Sürətlər qutusu seçilməlidir' })
     }
     if (!color) {
-      return res.status(400).json({ success: false, message: 'Reng secilmelidir' })
+      return res.status(400).json({ success: false, message: 'Rəng seçilməlidir' })
     }
     if (!city) {
-      return res.status(400).json({ success: false, message: 'Seher secilmelidir' })
+      return res.status(400).json({ success: false, message: 'Şəhər seçilməlidir' })
     }
 
     const updateData = {
