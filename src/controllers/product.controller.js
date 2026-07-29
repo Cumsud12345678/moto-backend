@@ -1,6 +1,7 @@
 const productService = require('../services/product.service');
 const fs = require("fs");
 const path = require("path");
+const formatProductDate = require("../utils/dateFormatter");
 
 // HOME
 const getProducts = async (req, res, next) => {
@@ -10,7 +11,11 @@ const getProducts = async (req, res, next) => {
     const limit = Number(req.query.limit) || 10
     
     const { products, hasMore } = await productService.getAllProduct(userId, page, limit)
-    return res.status(200).json({ success: true, data: products, hasMore })
+    const formattedProducts = products.map(product => ({
+      ...product,
+      createdAt: formatProductDate(product.createdAt)
+    }))
+    return res.status(200).json({ success: true, data: formattedProducts, hasMore })
   }catch(err){
     next(err);
   }
@@ -39,7 +44,10 @@ const getMetadata = async (req, res, next) => {
 // DETAILS
 const getProductDetails = async (req, res, next) => {
   try{
-    const data = await productService.getProductDetails(req.params.id)
+    console.log('a')
+    const userId = req.user?.id || null
+    console.log(req.user)
+    const data = await productService.getProductDetails(req.params.id, userId)
     res.status(200).json({ success: true, data: data })
   }catch(err){
     next(err)
@@ -52,7 +60,7 @@ const getSimilarProducts = async (req, res, next) => {
     const details = await productService.getProductDetails(req.params.id)
     if (!details) return res.status(404).json({ success: false, message: "Elan tapılmadı" });
 
-    const similarProducts = await productService.getSimilarProducts(details)
+    const similarProducts = await productService.getSimilarProducts(details.product)
     
     res.status(200).json({ success: true, data: similarProducts})
   }catch(err){

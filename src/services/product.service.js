@@ -1,4 +1,5 @@
 const Product = require('../models/product.model')
+const Favori = require('../models/favori.model')
 const Make = require('../models/make.model')
 const Model = require('../models/model.model')
 const Category = require('../models/category.model')
@@ -129,8 +130,13 @@ const getFilteredProducts = async (query) => {
 }
 
 // DETAILS PAGE
-const getProductDetails = async (id) => {
-  return await Product.findById(id)
+const getProductDetails = async (id, userId = null) => {
+  let ids = null
+  if(userId) {
+    ids = await Favori.find({ user: userId }).distinct("product");
+    console.log(ids)
+  }
+  const product = await Product.findById(id)
   .populate('make')
   .populate('model')
   .populate('fuel')
@@ -141,10 +147,14 @@ const getProductDetails = async (id) => {
   .populate('equipments')
   .populate('user')
   .populate('category')
+
+  return {
+    ids, product
+  }
 }
 
-const getSimilarProducts = async (currentProduct, limit = 8) => {
-  const { _id, make, model, category, price } = currentProduct;
+const getSimilarProducts = async (details, limit = 8) => {
+  const { _id, make, model, category, price } = details;
 
   // Make && Model e gore
   let similar = await Product.find({
