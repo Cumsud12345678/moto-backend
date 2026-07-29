@@ -36,10 +36,7 @@ const globalLimiter = rateLimit({
 
 app.use(cors({
   origin: [
-    "http://localhost:5173",
-    "http://192.168.100.29:5173",
-    "https://dir-indexed-five-prep.trycloudflare.com",
-    process.env.FRONTEND_URL
+    "https://moto-frontend-liart.vercel.app/"
   ],
   credentials: true
 }))

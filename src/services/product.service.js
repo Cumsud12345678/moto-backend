@@ -134,7 +134,6 @@ const getProductDetails = async (id, userId = null) => {
   let ids = null
   if(userId) {
     ids = await Favori.find({ user: userId }).distinct("product");
-    console.log(ids)
   }
   const product = await Product.findById(id)
   .populate('make')

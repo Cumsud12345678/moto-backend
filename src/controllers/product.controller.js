@@ -44,9 +44,7 @@ const getMetadata = async (req, res, next) => {
 // DETAILS
 const getProductDetails = async (req, res, next) => {
   try{
-    console.log('a')
     const userId = req.user?.id || null
-    console.log(req.user)
     const data = await productService.getProductDetails(req.params.id, userId)
     res.status(200).json({ success: true, data: data })
   }catch(err){
