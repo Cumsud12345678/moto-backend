@@ -36,7 +36,7 @@ const globalLimiter = rateLimit({
 
 app.use(cors({
   origin: [
-    "https://moto-frontend-liart.vercel.app"
+    "https://moto-frontend-lo4js5qqg-cumsud12345678s-projects.vercel.app/"
   ],
   credentials: true
 }))
