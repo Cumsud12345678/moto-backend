@@ -33,7 +33,7 @@ router.get('/', optionalAuth, getProducts);
 router.get('/autos', getFilteredProducts);
 
 // DETAILS
-router.get('/details/:id', auth, getProductDetails)
+router.get('/details/:id', optionalAuth, getProductDetails)
 router.get('/similars/:id', getSimilarProducts);
 
 // METADATA

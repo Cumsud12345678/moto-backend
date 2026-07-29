@@ -36,6 +36,7 @@ const globalLimiter = rateLimit({
 
 const allowedOrigins = [
   'https://moto-frontend-liart.vercel.app', // production domeniniz
+  process.env.FRONTEND_URL
 ];
 
 app.use(cors({
