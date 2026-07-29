@@ -34,12 +34,26 @@ const globalLimiter = rateLimit({
   max: 300
 })
 
+const allowedOrigins = [
+  'https://moto-frontend-liart.vercel.app', // production domeniniz
+];
+
 app.use(cors({
-  origin: [
-    "https://moto-frontend-lo4js5qqg-cumsud12345678s-projects.vercel.app/"
-  ],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // Postman kimi alətlər üçün
+    
+    const isAllowed =
+      allowedOrigins.includes(origin) ||
+      /^https:\/\/moto-frontend-.*\.vercel\.app$/.test(origin); // bütün preview-lar
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS icazəsi yoxdur: ' + origin));
+    }
+  },
   credentials: true
-}))
+}));
 
 app.use(express.json({ limit: '1mb' }))
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
