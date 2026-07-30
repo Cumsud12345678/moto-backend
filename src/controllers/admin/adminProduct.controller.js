@@ -11,8 +11,8 @@ dayjs.extend(timezone);
 const getProducts = async (req, res, next) => {
   try{
     const limit = 2
-    const skip = (page - 1) * limit
     const page = Number(req.query.page) || 1
+    const skip = (page - 1) * limit
     const products = await adminProductService.getProducts(skip, limit)
     res.status(200).json({success: true, data: products})
   }catch(err){
