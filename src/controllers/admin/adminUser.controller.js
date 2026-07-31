@@ -1,5 +1,6 @@
 const adminProductService = require('../../services/admin/adminProduct.service')
 const adminUserService = require('../../services/admin/adminUser.service')
+const formatDate = require("../../utils/dateFormatter");
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
@@ -12,8 +13,12 @@ const getUsers = async (req, res, next) => {
     const page = Number(req.query.page) || 1
     const limit = 2
     const skip = (page - 1) * limit
-    const data = await adminUserService.getUsers(skip, limit)
-    res.status(200).json({ success: true, data: data })
+    const {users, total} = await adminUserService.getUsers(skip, limit)
+    const formattedUsers = users.map(user => ({
+      ...user,
+      createdAt: formatDate(user.createdAt)
+    }))
+    res.status(200).json({ success: true, users: formattedUsers, total: total })
   }catch(err){
     next(err)
   }
@@ -22,7 +27,11 @@ const getUsers = async (req, res, next) => {
 const getUser = async (req, res, next) => {
   try{
     const data = await adminUserService.getUser(req.query)
-    res.status(200).json({ success: true, data: data })
+    const formattedUsers = data.map(user => ({
+      ...user,
+      createdAt: formatDate(user.createdAt)
+    }))
+    res.status(200).json({ success: true, data: formattedUsers })
   }catch(err){
     next(err)
   }
@@ -106,8 +115,12 @@ const getDeletedUsers = async (req, res, next) => {
     const limit = 2
     const page = Number(req.query.page) || 1
     const skip = (page - 1) * limit
-    const data = await adminUserService.getDeletedUsers(skip, limit)
-    res.status(200).json({success: true, data: data})
+    const {users, total} = await adminUserService.getDeletedUsers(skip, limit)
+    const formattedUsers = users.map(user => ({
+      ...user,
+      createdAt: formatDate(user.createdAt)
+    }))
+    res.status(200).json({success: true, users: formattedUsers, total: total})
   }catch(err){
     next(err)
   }
@@ -124,8 +137,12 @@ const deleteDeletedUser = async (req, res, next) => {
 
 const getDeletedUser = async (req, res, next) => {
   try{
-    const data = await adminUserService.getDeletedUser(req.query)
-    res.status(200).json({ success: true, data: data })
+    const users = await adminUserService.getDeletedUser(req.query)
+    const formattedUsers = users.map(user => ({
+      ...user,
+      createdAt: formatDate(user.createdAt)
+    }))
+    res.status(200).json({ success: true, users: formattedUsers })
   }catch(err){
     next(err)
   }

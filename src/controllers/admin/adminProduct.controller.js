@@ -1,5 +1,6 @@
 const adminProductService = require('../../services/admin/adminProduct.service')
 const adminUserService = require('../../services/admin/adminUser.service')
+const formatDate = require("../../utils/dateFormatter");
 
 const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
@@ -13,8 +14,12 @@ const getProducts = async (req, res, next) => {
     const limit = 2
     const page = Number(req.query.page) || 1
     const skip = (page - 1) * limit
-    const products = await adminProductService.getProducts(skip, limit)
-    res.status(200).json({success: true, data: products})
+    const {products, total} = await adminProductService.getProducts(skip, limit)
+    const formattedProduct = products.map(pr => ({
+      ...pr,
+      createdAt: formatDate(pr.createdAt)
+    }))
+    res.status(200).json({success: true, products: formattedProduct, total: total})
   }catch(err){
     next(err)
   }
@@ -23,7 +28,11 @@ const getProducts = async (req, res, next) => {
 const getProduct = async (req, res, next) => {
   try{
     const product = await adminProductService.getProduct(req.query)
-    res.status(200).json({success: true, data: product})
+    const formattedProduct = product.map(pr => ({
+      ...pr,
+      createdAt: formatDate(pr.createdAt)
+    }))
+    res.status(200).json({success: true, data: formattedProduct})
   }catch(err){ 
     next(err)
   }
@@ -32,7 +41,11 @@ const getProduct = async (req, res, next) => {
 const getUserProducts = async (req, res, next) => {
   try {
     const products = await adminProductService.getUserProducts(req.params.id)
-    res.status(200).json({ success: true, data: products })
+    const formattedProduct = products.map(pr => ({
+      ...pr,
+      createdAt: formatDate(pr.createdAt)
+    }))
+    res.status(200).json({ success: true, data: formattedProduct })
   }catch(err) {
     next(err)
   }
@@ -96,8 +109,12 @@ const getDeletedProducts = async (req, res, next) => {
     const page = Number(req.query.page) || 1
     const limit = 1
     const skip = (page - 1) * limit
-    const data = await adminProductService.getDeletedProducts(skip, limit)
-    res.status(200).json({success: true, data: data})
+    const {products, total} = await adminProductService.getDeletedProducts(skip, limit)
+    const formattedProducts = products.map(pr => ({
+      ...pr,
+      createdAt: formatDate(pr.createdAt)
+    }))
+    res.status(200).json({success: true, products: formattedProducts, total: total})
   }catch(err){
     next(err)
   }

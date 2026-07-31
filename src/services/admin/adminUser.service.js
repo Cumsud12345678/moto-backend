@@ -7,7 +7,7 @@ const fs = require('fs')
 
 const getUsers = async (skip, limit) => {
   const [users, total] = await Promise.all([
-    User.find().limit(limit).skip(skip).populate('productCount'),
+    User.find().limit(limit).skip(skip).populate('productCount').lean(),
     User.countDocuments()
   ])
 
@@ -28,7 +28,7 @@ const getUser = async (query) => {
   if(userId) filter._id = userId;
   if(phone) filter.phone = phone;
 
-  return await User.find(filter).populate('productCount')
+  return await User.find(filter).populate('productCount').lean()
 }
 
 const warningUser = async (id) => {
@@ -120,7 +120,7 @@ const getUserStats = async (startOfDay, onWeekAgo, oneMonthAgo) => {
 
 const getDeletedUsers = async (skip, limit) => {
   const [users, total] = await Promise.all([
-    DeletedUser.find().skip(skip).limit(limit),
+    DeletedUser.find().skip(skip).limit(limit).lean(),
     DeletedUser.countDocuments()
   ])
   
@@ -141,7 +141,7 @@ const getDeletedUser = async (query) => {
   if(query.userId) filter.user_id = query.userId;
   if(query.phone) filter.phone = query.phone
 
-  return await DeletedUser.find(filter)
+  return await DeletedUser.find(filter).lean()
 }
 
 module.exports = {

@@ -27,7 +27,8 @@ const getAllProduct = async (userId, page = 1, limit = 10) => {
     {
       $project: {
         price: 1, year: 1, mileage: 1, volume: 1,
-        make: 1, model: 1, city: 1, images: 1
+        make: 1, model: 1, city: 1, images: 1,
+        createdAt: 1
       }
     },
     { $lookup: { from: 'makes', localField: 'make', foreignField: '_id', as: 'make' } },

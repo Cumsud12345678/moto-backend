@@ -11,10 +11,12 @@ const mongoDB = require('./config/db.config')
 // User Routes
 const userRouter = require('./routes/user.routes')
 const productRouter = require('./routes/product.routes')
+
 // Admin Routes
 const adminUserRouter = require('./routes/admin/adminUser.routes')
 const adminProductRouter = require('./routes/admin/adminProduct.routes')
 const adminMetadataRouter = require('./routes/admin/adminMetadata.routes')
+const adminAdsenseRouter = require('./routes/admin/adminAdsense.routes')
 
 // Middlewares
 const errorModdleware = require('./middlewares/error.middleware')
@@ -71,6 +73,7 @@ app.use('/api/products', productRouter)
 app.use('/api/admin/users', auth, isAdmin, adminUserRouter)
 app.use('/api/admin/products', auth, isAdmin, adminProductRouter)
 app.use('/api/admin/metadata', auth, isAdmin, adminMetadataRouter)
+app.use('/api/admin/adsense', adminAdsenseRouter)
 
 app.use(errorModdleware)
 

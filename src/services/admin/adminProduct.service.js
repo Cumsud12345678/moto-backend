@@ -7,7 +7,7 @@ const { default: mongoose } = require('mongoose')
 
 const getProducts = async (skip, limit) => {
   const [products, total] = await Promise.all([
-    Product.find().skip(skip).limit(limit)
+    Product.find().skip(skip).limit(limit).lean()
       .populate('make').populate('model')
       .populate('category').populate('fuel')
       .populate('speed').populate('city')
@@ -27,7 +27,7 @@ const getProduct = async (query) => {
 
   if(id) filter._id = id
 
-  return await Product.find(filter)
+  return await Product.find(filter).lean()
   .populate('make')
   .populate('model')
   .populate('category')
@@ -42,7 +42,7 @@ const getProduct = async (query) => {
 
 const getUserProducts = async (id) => {
   return await Product
-  .find({ user: id })
+  .find({ user: id }).lean()
   .populate('make')
   .populate('model')
   .populate('category')
@@ -121,7 +121,7 @@ const getProductStats = async (startOfDay, onWeekAgo, oneMonthAgo) => {
 
 const getDeletedProducts = async (skip, limit) => {
   const [products, total] = await Promise.all([
-    DeletedProduct.find().skip(skip).limit(limit).populate('user'),
+    DeletedProduct.find().skip(skip).limit(limit).lean().populate('user'),
     DeletedProduct.countDocuments()
   ])
   return {
@@ -145,7 +145,7 @@ const getDeletedProduct = async (query) => {
     return await DeletedProduct.find({ user: user._id }).populate('user');
   }
 
-  return await DeletedProduct.find(filter).populate('user')
+  return await DeletedProduct.find(filter).populate('user').lean()
 }
 
 const deleteDeletedProducts = async (id) => {

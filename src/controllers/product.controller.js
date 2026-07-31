@@ -1,7 +1,7 @@
 const productService = require('../services/product.service');
 const fs = require("fs");
 const path = require("path");
-const formatProductDate = require("../utils/dateFormatter");
+const formatDate = require("../utils/dateFormatter");
 
 // HOME
 const getProducts = async (req, res, next) => {
@@ -13,7 +13,7 @@ const getProducts = async (req, res, next) => {
     const { products, hasMore } = await productService.getAllProduct(userId, page, limit)
     const formattedProducts = products.map(product => ({
       ...product,
-      createdAt: formatProductDate(product.createdAt)
+      createdAt: formatDate(product.createdAt)
     }))
     return res.status(200).json({ success: true, data: formattedProducts, hasMore })
   }catch(err){
