@@ -230,6 +230,9 @@ const loginValidate = async (req, res, next) => {
         { expiresIn: '365d' }
       )
 
+      const isProd = process.env.NODE_ENV === 'production'
+      const isTunnel = process.env.USE_TUNNEL === 'true'
+      
       res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production', // localda HTTP ilə test edərkən true olmasın
