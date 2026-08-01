@@ -20,13 +20,13 @@ const getUsers = async (skip, limit) => {
 const getUser = async (query) => {
   const {
     userId,
-    phone,
+    email,
   } = query
 
   const filter = {}
 
   if(userId) filter._id = userId;
-  if(phone) filter.phone = phone;
+  if(email) filter.email = email;
 
   return await User.find(filter).populate('productCount').lean()
 }
@@ -81,7 +81,7 @@ const deleteUser = async (id, desc) => {
   const user = await User.findById(id)
   await DeletedUser.create({
     user_id: id,
-    phone: user.phone,
+    email: user.email,
     description: desc
   })
   if(user.profile){
@@ -139,7 +139,7 @@ const getDeletedUser = async (query) => {
   const filter = {}
   if(query.id) filter._id = query.id
   if(query.userId) filter.user_id = query.userId;
-  if(query.phone) filter.phone = query.phone
+  if(query.email) filter.email = query.email
 
   return await DeletedUser.find(filter).lean()
 }

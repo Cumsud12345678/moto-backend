@@ -10,6 +10,7 @@ const Color = require('../models/color.model')
 const Status = require('../models/status.model')
 const User = require('../models/user.model')
 const Equipment = require('../models/equipment.model')
+const DeletedProduct = require('../models/delete.product.model')
 
 const fs = require('fs/promises');
 const path = require('path')
@@ -167,6 +168,7 @@ const getSimilarProducts = async (details, limit = 8) => {
   .populate({ path: 'model', select: 'label' })
   .populate('city')
   .limit(limit)
+  .lean()
 
   // Make ye gore
   if(similar.length < limit) {
@@ -179,6 +181,8 @@ const getSimilarProducts = async (details, limit = 8) => {
     .populate({ path: 'model', select: 'label' })
     .populate('city')
     .limit(limit - similar.length)
+    .lean()
+
     similar = [...similar,...more]
   }
 
@@ -199,6 +203,8 @@ const getSimilarProducts = async (details, limit = 8) => {
     .populate({ path: 'model', select: 'label' })
     .populate('city')
     .limit(limit - similar.length)
+    .lean()
+
     similar = [...similar, ...more]
   }
 
@@ -243,7 +249,14 @@ const createProduct = async (productData) => {
 }
 
 const deleteProduct = async (id) => {
-  const product = await Product.findById(id)
+  const product = await Product.findById(id).populate('user')
+
+  await DeletedProduct.create({
+    user: product.user._id,
+    phone: product.phone,
+    product_id: id,
+    description: ''
+  })
 
   for(const image of product.images){
     
@@ -266,12 +279,12 @@ const getFavoritesNotLogin = async(favorites) => {
   return await Product.find({
     _id: { $in: favorites },
     isActive: true,
-  }).populate('make').populate('model')
+  }).populate('make').populate('model').lean()
 }
 
 
 const getUserProducts = async (id) => {
-  return await Product.find({user: id}).populate('make').populate('model').populate('city')
+  return await Product.find({user: id}).populate('make').populate('model').populate('city').lean()
 }
 
 const updateProduct = async (id, data) => {

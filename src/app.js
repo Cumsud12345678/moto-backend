@@ -8,6 +8,8 @@ const cors = require('cors')
 // Database
 const mongoDB = require('./config/db.config')
 
+require('dotenv').config()
+
 // User Routes
 const userRouter = require('./routes/user.routes')
 const productRouter = require('./routes/product.routes')
@@ -27,7 +29,7 @@ const isAdmin = require('./middlewares/isAdmin.middleware')
 const path = require('path')
 const cookieParser = require('cookie-parser')
 const rateLimit = require('express-rate-limit')
-require('dotenv').config()
+
 require('./jobs/cleanLockedUsersListings');
 require('./jobs/cleanDeactiveProductListings');
 

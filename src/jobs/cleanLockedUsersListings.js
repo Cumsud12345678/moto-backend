@@ -1,4 +1,6 @@
 const cron = require('node-cron')
+const path = require('path')
+const fs = require('fs/promises')
 const User = require('../models/user.model')
 const Product = require('../models/product.model')
 
@@ -13,8 +15,25 @@ async function cleanExpiredLockedUsers() {
   }).select('_id')
 
   if(expiredUsers.length === 0) return;
-  
+
   const userIds = expiredUsers.map(u => u._id);
+
+  const productsToDelete = await Product.find({ user: { $in: userIds } }).select('_id images')
+
+  for (const product of productsToDelete) {
+    for (const image of product.images || []) {
+      const imagePath = path.join(__dirname, '../uploads', image)
+      try {
+        await fs.unlink(imagePath)
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          console.warn('Fayl onsuz da mövcud deyil:', image)
+        } else {
+          console.error('Fayl silinmədi:', image, err)
+        }
+      }
+    }
+  }
 
   const result = await Product.deleteMany({user: { $in: userIds }})
 }

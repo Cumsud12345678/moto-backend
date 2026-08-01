@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const deletedUserSchema = mongoose.Schema({
   user_id: String,
-  phone: Number,
+  email: String,
   description: String
 }, {
   timestamps: true

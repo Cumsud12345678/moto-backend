@@ -59,8 +59,13 @@ const getSimilarProducts = async (req, res, next) => {
     if (!details) return res.status(404).json({ success: false, message: "Elan tapılmadı" });
 
     const similarProducts = await productService.getSimilarProducts(details.product)
+
+    const formattedProducts = similarProducts.map(product => ({
+      ...product,
+      createdAt: formatDate(product.createdAt)
+    }))
     
-    res.status(200).json({ success: true, data: similarProducts})
+    res.status(200).json({ success: true, data: formattedProducts})
   }catch(err){
     next(err)
   }
@@ -70,12 +75,12 @@ const getSimilarProducts = async (req, res, next) => {
 const createProduct = async (req, res, next) => {
   try{
     const {
-      price, year, mileage, description, volume, power,
+      price, phone, year, mileage, description, volume, power,
       make, model, category, fuel, speed, city, color, status
     } = req.body
 
-    if(!make || !model || !year || !volume){
-      return res.status(400).json({ success: false, message: 'Marka, model, il və həcm məlumatlarıı tam deyil' })
+    if(!make || !model || !year || !volume || !phone){
+      return res.status(400).json({ success: false, message: 'Marka, model, il, həcm və nömrə məlumatlarıı tam deyil' })
     }
     if(!category || !status || !color || !fuel || !speed){
       return res.status(400).json({ success: false, message: 'Bütün kateqoriya/rəng/yanacaq/sürətlər qutusu sahələri doldurulmalıdır' })
@@ -116,7 +121,11 @@ const getFavoritesNotLogin = async (req, res, next) => {
   try{
     const { favorites } = req.body
     const data = await productService.getFavoritesNotLogin(favorites)
-    res.status(200).json({ success: true, data: data })
+    const formattedProducts = data.map(product => ({
+      ...product,
+      createdAt: formatDate(product.createdAt)
+    }))
+    res.status(200).json({ success: true, data: formattedProducts })
   }catch(err){
     next(err)
   }
@@ -125,7 +134,7 @@ const getFavoritesNotLogin = async (req, res, next) => {
 // PROFILE
 const deleteProduct = async (req, res, next) => {
   try{
-    const product = await productService.getProductDetails(req.params.id)
+    const {product} = await productService.getProductDetails(req.params.id)
     if (product.user._id.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: 'İcazəniz yoxdur' })
     }
@@ -142,7 +151,11 @@ const getUserProducts = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'İcazəniz yoxdur' })
     }
     const data = await productService.getUserProducts(req.params.id)
-    res.status(200).json({ success: true, data: data })
+    const formattedProducts = data.map(product => ({
+      ...product,
+      createdAt: formatDate(product.createdAt)
+    }))
+    res.status(200).json({ success: true, data: formattedProducts })
   } catch (err) {
     next(err)
   }

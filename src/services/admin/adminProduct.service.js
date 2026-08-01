@@ -22,10 +22,11 @@ const getProducts = async (skip, limit) => {
 }
 
 const getProduct = async (query) => {
-  const { id } = query
+  const { id, phone } = query
   const filter = {}
 
   if(id) filter._id = id
+  if(phone) filter.phone = phone
 
   return await Product.find(filter).lean()
   .populate('make')
@@ -90,7 +91,11 @@ const deleteProduct = async (id, text) => {
     try{
       await fs.unlink(imagePath)
     }catch(err){
-      console.log(err)
+      if (err.code === 'ENOENT') {
+        console.warn('Fayl onsuz da mövcud deyil (silinməyə ehtiyac yoxdur):', image)
+      } else {
+        console.error('Fayl silinmədi:', image, err)
+      }
     }
   }
   
@@ -133,14 +138,11 @@ const getDeletedProducts = async (skip, limit) => {
 const getDeletedProduct = async (query) => {
   const filter = {}
   if(query.productID) filter.product_id = query.productID;
-  if(query.userID) {
-    if (query.userID && !mongoose.Types.ObjectId.isValid(query.userID)) {
-      throw new Error("User ID is not valid");
-    }
-    filter.user = query.userID;
+  if(query.phone) {
+    filter.phone = query.phone;
   }
-  if (query.userPhone) {
-    const user = await User.findOne({ phone: Number(query.userPhone) });
+  if (query.userEmail) {
+    const user = await User.findOne({ email: query.userEmail });
     if (!user) return [];
     return await DeletedProduct.find({ user: user._id }).populate('user');
   }

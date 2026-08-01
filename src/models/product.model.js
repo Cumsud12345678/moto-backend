@@ -7,6 +7,7 @@ const productSchema = mongoose.Schema({
   description: String,
   volume: Number,
   power: Number,
+  phone: Number,
   images: [String],
   make: { type: mongoose.Schema.Types.ObjectId, ref: 'Make' },
   model: { type: mongoose.Schema.Types.ObjectId, ref: 'Model' },

@@ -3,8 +3,8 @@ const Product = require('../models/product.model')
 const City = require('../models/city.model')
 const Favori = require('../models/favori.model')
 
-const getUser = async (phone) => {
-  return await User.findOne({phone: phone})
+const getUser = async (email) => {
+  return await User.findOne({email: email})
 }
 
 const getUserById = async (id) => {
@@ -64,7 +64,7 @@ const getFavorites = async (id) => {
       { path: 'model' },
       { path: 'city' }
     ]
-  })
+  }).lean()
 }
 
 

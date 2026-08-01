@@ -3,29 +3,30 @@ const jwt = require('jsonwebtoken')
 const redis = require('../config/redis.config')
 const fs = require("fs");
 const path = require("path");
-
+const formatDate = require("../utils/dateFormatter");
+const { sendOtpEmail } = require('../services/mail.service')
 
 // REHISTER
 const register = async (req, res, next) => {
   try{
     
-    if(!req.body.phone || !req.body.name){
+    if(!req.body.email || !req.body.name){
       return res.status(400).json({success: false, message: 'Məlumat tam deyil'})
     }
 
-    const user = await userService.getUser(req.body.phone)
+    const user = await userService.getUser(req.body.email)
     if(user){
-      return res.status(409).json({success: false, message: 'Nömrə isdifadə olunur'})
+      return res.status(409).json({success: false, message: 'Email isdifadə olunur'})
     }
 
-    const existing = await redis.get(`register:${req.body.phone}`)
+    const existing = await redis.get(`register:${req.body.email}`)
 
     if(existing){
-      const ttl = await redis.ttl(`register:${req.body.phone}`)
+      const ttl = await redis.ttl(`register:${req.body.email}`)
       return res.status(429).json({success: false, message: `${ttl} saniyə sonra tekrar dənəyin`})
     }
 
-    const attemptsKey = `register-attempts:${req.body.phone}`
+    const attemptsKey = `register-attempts:${req.body.email}`
     const attempts = await redis.incr(attemptsKey)
     if(attempts == 1){
       await redis.expire(attemptsKey, 3600)
@@ -36,13 +37,19 @@ const register = async (req, res, next) => {
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
 
+    try{
+      await sendOtpEmail(req.body.email, otp, 'register')
+    }catch(mailErr){
+      console.error('OTP email xətası:', mailErr.message)
+      return res.status(502).json({ success: false, message: 'Kod göndərilmədi, bir az sonra yenidən cəhd edin' })
+    }
+
     if (otp) {
-      console.log(otp)
       await redis.set(
-        `register:${req.body.phone}`,
+        `register:${req.body.email}`,
         JSON.stringify({
           otp,
-          phone: req.body.phone,
+          email: req.body.email,
           name: req.body.name
         }),
         {
@@ -61,7 +68,7 @@ const register = async (req, res, next) => {
 
 const registerValidate = async (req, res, next) => {
   try{
-    const data = await redis.get(`register:${req.body.phone}`)
+    const data = await redis.get(`register:${req.body.email}`)
     if(!data){
       return res.status(400).json({
         success: false,
@@ -71,29 +78,28 @@ const registerValidate = async (req, res, next) => {
 
     const registerData = JSON.parse(data)
 
-    console.log(registerData.otp)
-
-    const failKey = `register-fail:${req.body.phone}`
+    const failKey = `register-fail:${req.body.email}`
 
     if(req.body.otp == registerData.otp){
       await redis.del(failKey)
 
       const form = {
         name: registerData.name,
-        phone: registerData.phone
+        email: registerData.email
       }
       const newUser = await userService.createUser(form)
 
       if (newUser) {
-        await redis.del(`register:${registerData.phone}`);
+        await redis.del(`register:${registerData.email}`);
         const token = jwt.sign(
           { id: newUser._id, role: newUser.role },
           process.env.JWT_SECRET,
-          { expiresIn: '7d' }
+          { expiresIn: '365d' }
         )
 
         const isProd = process.env.NODE_ENV === 'production'
         const isTunnel = process.env.USE_TUNNEL === 'true'
+
         res.cookie('token', token, {
           httpOnly: true,
           secure: isProd || isTunnel, // localda HTTP ilə test edərkən true olmasın
@@ -115,7 +121,7 @@ const registerValidate = async (req, res, next) => {
       }
 
       if (fails > 5) {
-        await redis.del(`register:${req.body.phone}`)
+        await redis.del(`register:${req.body.email}`)
         await redis.del(failKey)
         return res.status(429).json({ success: false, message: 'Çox sayda səhf cəhd, yenidən qeydiyyatdan keçin' })
       }
@@ -132,10 +138,10 @@ const registerValidate = async (req, res, next) => {
 const login = async (req, res, next) => {
   try{
 
-    if(!req.body.phone || req.body.phone.length !== 9){
+    if(!req.body.email){
       return res.status(401).json({success: false, message: 'Məlumat əksikdir'})
     }
-    const user = await userService.getUser(req.body.phone)
+    const user = await userService.getUser(req.body.email)
 
     if(!user){
       return res.status(404).json({success: false, message: 'İsdifadəçi tapilmadı'})
@@ -145,13 +151,13 @@ const login = async (req, res, next) => {
       return res.status(409).json({success: false, message: 'Siz qaydaları çox pozduqunuza görə uzaqlaşdırılmısız!!!'})
     }
 
-    const existing = await redis.get(`login:${req.body.phone}`)
+    const existing = await redis.get(`login:${req.body.email}`)
     if(existing){
-      const ttl = await redis.ttl(`login:${req.body.phone}`)
+      const ttl = await redis.ttl(`login:${req.body.email}`)
       return res.status(429).json({success: false, message: `${ttl} saniyə sonra tekrar dənəyin`})
     }
 
-    const attemptsKey = `login-attempts:${req.body.phone}`
+    const attemptsKey = `login-attempts:${req.body.email}`
     const attempts = await redis.incr(attemptsKey)
     if(attempts == 1){
       await redis.expire(attemptsKey, 3600)
@@ -163,13 +169,19 @@ const login = async (req, res, next) => {
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
 
+    try{
+      await sendOtpEmail(req.body.email, otp, 'login')
+    }catch(mailErr){
+      console.error('OTP email xətası:', mailErr.message)
+      return res.status(502).json({ success: false, message: 'Kod göndərilmədi, bir az sonra yenidən cəhd edin' })
+    }
+
     if(otp){
-      console.log(otp)
       await redis.set(
-        `login:${req.body.phone}`,
+        `login:${req.body.email}`,
         JSON.stringify({
           otp,
-          phone: req.body.phone
+          email: req.body.email
         }),
         {
           EX: 120
@@ -187,7 +199,7 @@ const login = async (req, res, next) => {
 
 const loginValidate = async (req, res, next) => {
   try{
-    const data = await redis.get(`login:${req.body.phone}`)
+    const data = await redis.get(`login:${req.body.email}`)
     
     if(!data){
       return res.status(400).json({
@@ -198,7 +210,7 @@ const loginValidate = async (req, res, next) => {
 
     const loginData = JSON.parse(data)
 
-    const user = await userService.getUser(loginData.phone);
+    const user = await userService.getUser(loginData.email);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -206,16 +218,16 @@ const loginValidate = async (req, res, next) => {
       });
     }
 
-    const failKey = `login-fail:${req.body.phone}`
+    const failKey = `login-fail:${req.body.email}`
 
     if(req.body.otp == loginData.otp){
       await redis.del(failKey)
-      await redis.del(`login:${loginData.phone}`)
+      await redis.del(`login:${loginData.email}`)
 
       const token = jwt.sign(
         { id: user._id, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: '7d' }
+        { expiresIn: '365d' }
       )
 
       res.cookie('token', token, {
@@ -291,7 +303,7 @@ const getMe = async (req, res, next) => {
       user: {
         id: user._id,
         name: user.name,
-        phone: user.phone,
+        email: user.email,
         profile: user.profile,
         role: user.role
       }
@@ -380,7 +392,14 @@ const deleteFavori = async (req, res, next) => {
 const getFavorites = async (req, res, next) => {
   try{
     const products = await userService.getFavorites(req.user.id)
-    res.status(200).json({ success: true, data: products })
+    const formattedProducts = products.map(item => ({
+      ...item,
+      product: {
+        ...item.product,
+        createdAt: formatDate(item.product.createdAt)
+      }
+    }))
+    res.status(200).json({ success: true, data: formattedProducts })
   }catch(err){
     next(err)
   }

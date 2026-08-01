@@ -5,8 +5,8 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true
   },
-  phone: {
-    type: Number
+  email: {
+    type: String
   },
   profile: {
     type: String,
