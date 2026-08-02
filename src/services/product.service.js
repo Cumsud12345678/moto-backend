@@ -127,6 +127,7 @@ const getFilteredProducts = async (query) => {
     .populate('make')
     .populate({ path: 'model', select: 'label' })
     .populate('city')
+    .lean()
   
   return result
 }

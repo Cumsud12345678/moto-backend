@@ -25,7 +25,11 @@ const getProducts = async (req, res, next) => {
 const getFilteredProducts = async (req, res, next) => {
   try{
     const data = await productService.getFilteredProducts(req.query)
-    res.status(200).json({success: true, data: data})
+    const formattedProducts = data.map(product => ({
+      ...product,
+      createdAt: formatDate(product.createdAt)
+    }))
+    res.status(200).json({success: true, data: formattedProducts})
   }catch(err){
     next(err)
   }
