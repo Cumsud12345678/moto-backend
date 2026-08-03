@@ -291,6 +291,19 @@ const getFavoritesNotLogin = async(favorites) => {
   }).populate('make').populate('model').lean()
 }
 
+const getUserProduct = async (id, userId) => {
+  return await Product.findOne({ _id: id, user: userId })
+  .populate('make')
+  .populate('model')
+  .populate('fuel')
+  .populate('speed')
+  .populate('city')
+  .populate('color')
+  .populate('status')
+  .populate('equipments')
+  .populate('user')
+  .populate('category')
+}
 
 const getUserProducts = async (id) => {
   return await Product.find({user: id}).populate('make').populate('model').populate('city').lean()
@@ -317,7 +330,9 @@ module.exports = {
   createProduct,
 
   deleteProduct,
+
   getUserProducts,
+  getUserProduct,
 
   updateProduct
 }

@@ -19,6 +19,7 @@ const {
 
   getFilteredProducts,
 
+  getUserProduct,
   getUserProducts,
 
   updateProduct,
@@ -38,6 +39,7 @@ router.get('/autos', getFilteredProducts);
 router.get('/details/:id', optionalAuth, getProductDetails)
 router.get('/similars/:id', getSimilarProducts);
 router.get('/:id/click', clickProduct)
+router.get('/user/product/:id', auth, getUserProduct)
 
 // METADATA
 router.get('/metadata', getMetadata);

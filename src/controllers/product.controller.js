@@ -158,6 +158,19 @@ const deleteProduct = async (req, res, next) => {
   }
 }
 
+const getUserProduct = async (req, res, next) => {
+  try{
+    const product = await productService.getUserProduct(req.params.id, req.user.id)
+    if(!product) {
+      return res.status(404).json({success: false, message: 'Elan tapilmadi'})
+    }
+
+    res.status(200).json({success: true, data: product})
+  }catch(err){
+    next(err)
+  }
+}
+
 const getUserProducts = async (req, res, next) => {
   try{
     if(req.user.id !== req.params.id){
@@ -295,6 +308,8 @@ module.exports = {
   createProduct,
 
   deleteProduct,
+
+  getUserProduct,
   getUserProducts,
 
   updateProduct,
