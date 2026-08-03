@@ -1,6 +1,8 @@
+const sendErrorMail = require("../services/sendErrorMail.service");
+
 const errorMiddleware = (err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Server xətası';
+  let statusCode = err.statusCode || 500;
+  let message = err.message || 'Server xətası';
 
   // Multer-in fayl ölçüsü xətasını tut
   if (err.code === 'LIMIT_FILE_SIZE') {
@@ -8,7 +10,17 @@ const errorMiddleware = (err, req, res, next) => {
     message = 'Şəkil ölçüsü çox böyükdür (maksimum 2MB)'
   }
  
-  console.error(`[XƏTA] ${statusCode}: ${message}`);
+  if (statusCode >= 500) {
+    sendErrorMail({
+      statusCode,
+      message,
+      stack: err.stack,
+      method: req.method,
+      url: req.originalUrl,
+      user: req.user?.id,
+      ip: req.ip,
+    }).catch(console.error);
+  }
  
   res.status(statusCode).json({
     success: false,

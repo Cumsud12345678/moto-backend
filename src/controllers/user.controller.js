@@ -4,7 +4,7 @@ const redis = require('../config/redis.config')
 const fs = require("fs");
 const path = require("path");
 const formatDate = require("../utils/dateFormatter");
-const { sendOtpEmail } = require('../services/mail.service')
+const { sendOtpEmail } = require('../services/sendOtpMail.service')
 
 // REHISTER
 const register = async (req, res, next) => {

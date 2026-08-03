@@ -212,6 +212,14 @@ const getSimilarProducts = async (details, limit = 8) => {
   return similar;
 }
 
+const clickProduct = async (id) => {
+  await Product.findByIdAndUpdate(id, 
+    { $inc: { views: 1 } }
+  )
+
+  return true
+}
+
 // METADATA
 const getMetadata = async () => {
   const [ 
@@ -300,6 +308,7 @@ module.exports = {
 
   getProductDetails,
   getSimilarProducts,
+  clickProduct,
 
   getMetadata,
 

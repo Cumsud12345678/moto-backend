@@ -11,6 +11,8 @@ const {
 
   getSimilarProducts,
 
+  clickProduct,
+
   getMetadata,
   deleteProduct,
   getFavoritesNotLogin,
@@ -35,6 +37,7 @@ router.get('/autos', getFilteredProducts);
 // DETAILS
 router.get('/details/:id', optionalAuth, getProductDetails)
 router.get('/similars/:id', getSimilarProducts);
+router.get('/:id/click', clickProduct)
 
 // METADATA
 router.get('/metadata', getMetadata);

@@ -75,6 +75,15 @@ const getSimilarProducts = async (req, res, next) => {
   }
 }
 
+const clickProduct = async (req, res, next) => {
+  try{
+    const success = await productService.clickProduct(req.params.id)
+    res.status(200).json({success})
+  }catch(err){
+    next(err)
+  }
+}
+
 // NEW PRODUCT
 const createProduct = async (req, res, next) => {
   try{
@@ -277,6 +286,8 @@ module.exports = {
   getFilteredProducts,
 
   getSimilarProducts,
+
+  clickProduct,
   
   getMetadata,
 
