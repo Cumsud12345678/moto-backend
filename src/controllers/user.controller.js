@@ -232,13 +232,22 @@ const loginValidate = async (req, res, next) => {
 
       const isProd = process.env.NODE_ENV === 'production'
       const isTunnel = process.env.USE_TUNNEL === 'true'
-      
+
       res.cookie('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // localda HTTP ilə test edərkən true olmasın
+        secure: isProd || isTunnel, // localda HTTP ilə test edərkən true olmasın
         sameSite: (isProd || isTunnel) ? 'none' : 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000
       })
+      // const isProd = process.env.NODE_ENV === 'production'
+      // const isTunnel = process.env.USE_TUNNEL === 'true'
+      
+      // res.cookie('token', token, {
+      //   httpOnly: true,
+      //   secure: process.env.NODE_ENV === 'production', // localda HTTP ilə test edərkən true olmasın
+      //   sameSite: (isProd || isTunnel) ? 'none' : 'lax',
+      //   maxAge: 7 * 24 * 60 * 60 * 1000
+      // })
 
       return res.status(200).json({ success: true, id: user._id })
 
