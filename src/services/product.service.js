@@ -16,13 +16,284 @@ const fs = require('fs/promises');
 const path = require('path')
 const mongoose = require('mongoose')
 
+
 // HOME PAGE
 const getAllProduct = async (userId, page = 1, limit = 10) => {
   const skip = (page - 1) * limit
+  
+  const pipeline = buildPipeline({isActive: true}, {createdAt: -1}, skip, limit, userId)
+  
+  const [products, total] = await Promise.all([
+    Product.aggregate(pipeline),
+    Product.countDocuments({ isActive: true })
+  ])
+  
+  const hasMore = skip + products.length < total
+
+  return { products, hasMore }
+}
+
+
+// AUTOS PAGE
+const getFilteredProducts = async (query, userId, page, limit) => {
+  const skip = (page - 1) * limit
+
+  const filter = buildFilter(query)
+  const pipeline = buildPipeline(filter, {createdAt: -1}, skip, limit, userId)
+  
+  const [products, total] = await Promise.all([
+    Product.aggregate(pipeline),
+    Product.countDocuments(filter)
+  ])
+
+  return {
+    products,
+    total: Math.ceil(total / limit)
+  }
+
+}
+
+const getDetailsById = async (id) => {
+  return await Product.findById(id)
+  .populate('make')
+  .populate('model')
+  .populate('fuel')
+  .populate('speed')
+  .populate('city')
+  .populate('color')
+  .populate('status')
+  .populate('equipments')
+  .populate('user')
+  .populate('category')
+}
+
+const getDetailsOne = async (filter) => {
+  return product = await Product.findOne(filter)
+  .populate('make')
+  .populate('model')
+  .populate('fuel')
+  .populate('speed')
+  .populate('city')
+  .populate('color')
+  .populate('status')
+  .populate('equipments')
+  .populate('user')
+  .populate('category')
+}
+
+const getProducts = async (filter) => {
+  return products = await Product.find(filter)
+  .populate('make')
+  .populate('model')
+  .populate('city')
+  .lean()
+}
+
+const getFavoritesIDS = async (userId) => {
+  return ids = await Favori.find({ user: userId }).distinct("product");
+}
+
+// const getSimilarProducts = async (details, limit = 8) => {
+//   const { _id, make, model, category, price } = details;
+
+//   // Make && Model e gore
+//   let similar = await Product.find({
+//     _id: { $ne: _id },
+//     make,
+//     model,
+//     isActive: true
+//   })
+//   .populate('make')
+//   .populate({ path: 'model', select: 'label' })
+//   .populate('city')
+//   .limit(limit)
+//   .lean()
+
+//   // Make ye gore
+//   if(similar.length < limit) {
+//     const more = await Product.find({
+//       _id: { $ne: _id, $nin: similar.map(p => p._id) },
+//       make,
+//       isActive: true
+//     })
+//     .populate('make')
+//     .populate({ path: 'model', select: 'label' })
+//     .populate('city')
+//     .limit(limit - similar.length)
+//     .lean()
+
+//     similar = [...similar,...more]
+//   }
+
+//   // Price && Category
+//   if(similar.length < limit){
+//     const priceRange = { $gte: price * 0.7, $lte: price * 1.7 }
+//     const more = await Product.find({
+//       _id: { $ne: _id, $nin: similar.map(p => p._id) },
+//       isActive: true,
+//       $or: [
+//         {category},
+//         {
+//           price: priceRange
+//         }
+//       ]
+//     })
+//     .populate('make')
+//     .populate({ path: 'model', select: 'label' })
+//     .populate('city')
+//     .limit(limit - similar.length)
+//     .lean()
+
+//     similar = [...similar, ...more]
+//   }
+
+//   return similar;
+// }
+
+const getSimilarProducts = async (details, limit = 8, userId) => {
+  const { _id, make, model, category, price } = details;
+
+  const makeId = make?._id;
+  const modelId = model?._id;
+  const categoryId = category?._id;
+  
+  // Make && Model e gore
+  const pipelineMM = buildPipeline(
+    {
+      _id: { $ne: _id },
+      makeId,
+      modelId,
+      isActive: true
+    },
+    {createdAt: -1}, 0, limit, userId
+  )
+
+  let similar = await Product.aggregate(pipelineMM)
+  
+  // Make ye gore
+  if(similar.length < limit) {
+    const pipelineM = buildPipeline(
+      {
+        _id: { $ne: _id, $nin: similar.map(p => p._id) },
+        makeId,
+        isActive: true
+      },
+      {createdAt: -1}, 0, limit, userId
+    )
+
+    const more = await Product.aggregate(pipelineM)
+    
+    similar = [...similar,...more]
+  }
+
+  // Price && Category
+  if(similar.length < limit){
+    const priceRange = { $gte: price * 0.7, $lte: price * 1.7 }
+    const pipelinePC = buildPipeline(
+      {
+        _id: { $ne: _id, $nin: similar.map(p => p._id) },
+        isActive: true,
+        $or: [
+          {categoryId},
+          {
+            price: priceRange
+          }
+        ]
+      },
+      {createdAt: -1}, 0, limit, userId
+    )
+    const more = await Product.aggregate(pipelinePC)
+
+    similar = [...similar, ...more]
+  }
+
+  return similar;
+}
+
+// METADATA
+const getMetadata = async () => {
+  const [ 
+    makes, models, fuels, speeds, cities, colors, categories, statuses, equipments 
+  ] = 
+    await Promise.all([
+      Make.find(),
+      Model.find(),
+      Fuel.find(),
+      Speed.find(),
+      City.find(),
+      Color.find(),
+      Category.find(),
+      Status.find(),
+      Equipment.find()
+  ])
+
+  return {
+    makes,
+    models,
+    fuels,
+    speeds,
+    cities,
+    colors,
+    categories,
+    statuses,
+    equipments
+  }
+}
+
+// PROFILE PAGE
+const createProduct = async (productData) => {
+  return await Product.create(productData)
+}
+
+const deleteProduct = async (id) => {
+  const product = await Product.findById(id).populate('user')
+
+  await DeletedProduct.create({
+    user: product.user._id,
+    phone: product.phone,
+    product_id: id,
+    description: ''
+  })
+
+  for(const image of product.images){
+    
+    const imagePath = path.join(__dirname, '../uploads', image)
+
+    try{
+      await fs.unlink(imagePath)
+    }catch(err){
+      console.log(err)
+    }
+  }
+
+  await Product.findByIdAndDelete(id);
+  return 'Silindi'
+
+}
+
+const updateProduct = async (id, data) => {
+  return await Product.findByIdAndUpdate(id, data, { returnDocument: 'after', runValidators: true })
+}
+
+// BOOKMARKS PAGE
+const getFavoritesNotLogin = async(favorites) => {
+  return getProducts({ _id: { $in: favorites }, isActive: true })
+}
+
+const getUserProduct = async (id, userId) => {
+  return await getDetailsOne({ _id: id, user: userId })
+}
+
+const getUserProducts = async (id) => {
+  return await getProducts({user: id})
+}
+
+// Builds
+const buildPipeline = (filter, sort, skip, limit, userId) => {
 
   const pipeline = [
-    { $match: { isActive: true } },
-    { $sort: { createdAt: -1 } },   // ✅ təsadüfi yerinə sıralı
+    { $match: filter },
+    { $sort: sort },   // ✅ təsadüfi yerinə sıralı
     { $skip: skip },
     { $limit: limit },
     {
@@ -62,17 +333,10 @@ const getAllProduct = async (userId, page = 1, limit = 10) => {
     pipeline.push({ $addFields: { is_liked: false } })
   }
 
-  const products = await Product.aggregate(pipeline)
-  const total = await Product.countDocuments({ isActive: true })
-  const hasMore = skip + products.length < total
-
-  return { products, hasMore }
+  return pipeline
 }
 
-
-// AUTOS PAGE
-const getFilteredProducts = async (query) => {
-  
+const buildFilter = (query) => {
   const { 
     make, model, category, status, fuel, city, color, speed, 
     equipments,
@@ -87,28 +351,22 @@ const getFilteredProducts = async (query) => {
 
   filter.isActive = true;
 
-  if(make) filter.make = make;
-  if(model) filter.model = model;
-  if(category) filter.category = category;
-  if(status) filter.status = status;
-  if(fuel) filter.fuel = fuel
-  if(city) filter.city = city
-  if(color) filter.color = color
-  if(speed) filter.speed = speed
+  if (make) filter.make = toObjectId(make)
+  if (model) filter.model = toObjectId(model)
+  if (category) filter.category = toObjectId(category)
+  if (status) filter.status = toObjectId(status)
+  if (fuel) filter.fuel = toObjectId(fuel)
+  if (city) filter.city = toObjectId(city)
+  if (color) filter.color = toObjectId(color)
+  if (speed) filter.speed = toObjectId(speed)
+
   if (equipments) {
-    const equipmentIds = Array.isArray(equipments)
-      ? equipments
-      : equipments.split(',').filter(Boolean)
-
-    if (equipmentIds.length > 0) {
-      // Məhsul SEÇİLMİŞ AVADANLIQLARIN HAMISINI daşımalıdırsa:
-      // filter.equipments = { $all: equipmentIds }
-
-      // Yoxsa, ən azı BİRİNİ daşıması kifayətdirsə:
-      filter.equipments = { $in: equipmentIds }
-    }
+    const equipmentIds = (Array.isArray(equipments) ? equipments : equipments.split(','))
+      .filter(Boolean)
+      .map(toObjectId)
+    if (equipmentIds.length > 0) filter.equipments = { $in: equipmentIds }
   }
-
+  
   const addRange = (field, min, max) => {
     if ((min !== undefined && min !== '') || (max !== undefined && max !== '')) {
       filter[field] = {}
@@ -123,195 +381,12 @@ const getFilteredProducts = async (query) => {
   addRange('volume', minVolume, maxVolume)
   addRange('mileage', minDistance, maxDistance) // "distance" = mileage sahəsi
 
-  const result = await Product.find(filter)
-    .populate('make')
-    .populate({ path: 'model', select: 'label' })
-    .populate('city')
-    .lean()
-  
-  return result
+  return filter
 }
 
-// DETAILS PAGE
-const getProductDetails = async (id, userId = null) => {
-  let ids = null
-  if(userId) {
-    ids = await Favori.find({ user: userId }).distinct("product");
-  }
-  const product = await Product.findById(id)
-  .populate('make')
-  .populate('model')
-  .populate('fuel')
-  .populate('speed')
-  .populate('city')
-  .populate('color')
-  .populate('status')
-  .populate('equipments')
-  .populate('user')
-  .populate('category')
+const toObjectId = (id) => 
+  mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id
 
-  return {
-    ids, product
-  }
-}
-
-const getSimilarProducts = async (details, limit = 8) => {
-  const { _id, make, model, category, price } = details;
-
-  // Make && Model e gore
-  let similar = await Product.find({
-    _id: { $ne: _id },
-    make,
-    model,
-    isActive: true
-  })
-  .populate('make')
-  .populate({ path: 'model', select: 'label' })
-  .populate('city')
-  .limit(limit)
-  .lean()
-
-  // Make ye gore
-  if(similar.length < limit) {
-    const more = await Product.find({
-      _id: { $ne: _id, $nin: similar.map(p => p._id) },
-      make,
-      isActive: true
-    })
-    .populate('make')
-    .populate({ path: 'model', select: 'label' })
-    .populate('city')
-    .limit(limit - similar.length)
-    .lean()
-
-    similar = [...similar,...more]
-  }
-
-  // Price && Category
-  if(similar.length < limit){
-    const priceRange = { $gte: price * 0.7, $lte: price * 1.7 }
-    const more = await Product.find({
-      _id: { $ne: _id, $nin: similar.map(p => p._id) },
-      isActive: true,
-      $or: [
-        {category},
-        {
-          price: priceRange
-        }
-      ]
-    })
-    .populate('make')
-    .populate({ path: 'model', select: 'label' })
-    .populate('city')
-    .limit(limit - similar.length)
-    .lean()
-
-    similar = [...similar, ...more]
-  }
-
-  return similar;
-}
-
-const clickProduct = async (id) => {
-  await Product.findByIdAndUpdate(id, 
-    { $inc: { views: 1 } }
-  )
-
-  return true
-}
-
-// METADATA
-const getMetadata = async () => {
-  const [ 
-    makes, models, fuels, speeds, cities, colors, categories, statuses, equipments 
-  ] = 
-    await Promise.all([
-      Make.find(),
-      Model.find(),
-      Fuel.find(),
-      Speed.find(),
-      City.find(),
-      Color.find(),
-      Category.find(),
-      Status.find(),
-      Equipment.find()
-  ])
-
-  return {
-    makes,
-    models,
-    fuels,
-    speeds,
-    cities,
-    colors,
-    categories,
-    statuses,
-    equipments
-  }
-}
-
-
-
-// PROFILE PAGE
-const createProduct = async (productData) => {
-  return await Product.create(productData)
-}
-
-const deleteProduct = async (id) => {
-  const product = await Product.findById(id).populate('user')
-
-  await DeletedProduct.create({
-    user: product.user._id,
-    phone: product.phone,
-    product_id: id,
-    description: ''
-  })
-
-  for(const image of product.images){
-    
-    const imagePath = path.join(__dirname, '../uploads', image)
-
-    try{
-      await fs.unlink(imagePath)
-    }catch(err){
-      console.log(err)
-    }
-  }
-
-  await Product.findByIdAndDelete(id);
-  return 'Silindi'
-
-}
-
-// BOOKMARKS PAGE
-const getFavoritesNotLogin = async(favorites) => {
-  return await Product.find({
-    _id: { $in: favorites },
-    isActive: true,
-  }).populate('make').populate('model').lean()
-}
-
-const getUserProduct = async (id, userId) => {
-  return await Product.findOne({ _id: id, user: userId })
-  .populate('make')
-  .populate('model')
-  .populate('fuel')
-  .populate('speed')
-  .populate('city')
-  .populate('color')
-  .populate('status')
-  .populate('equipments')
-  .populate('user')
-  .populate('category')
-}
-
-const getUserProducts = async (id) => {
-  return await Product.find({user: id}).populate('make').populate('model').populate('city').lean()
-}
-
-const updateProduct = async (id, data) => {
-  return await Product.findByIdAndUpdate(id, data, { returnDocument: 'after', runValidators: true })
-}
 
 module.exports = {
   
@@ -319,9 +394,12 @@ module.exports = {
 
   getFilteredProducts,
 
-  getProductDetails,
+  getFavoritesIDS,
+
+  getDetailsOne,
+
+  getDetailsById,
   getSimilarProducts,
-  clickProduct,
 
   getMetadata,
 

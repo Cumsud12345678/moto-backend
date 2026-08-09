@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const adsenseSchema = mongoose.Schema({
   position: {
     type: String,
-    enum: ['mobile', 'deskop'],
+    enum: ['mobile', 'deskop_left', 'deskop_right'],
     default: 'mobile'
   },
   image: String,

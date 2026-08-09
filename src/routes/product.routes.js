@@ -33,12 +33,11 @@ const {
 router.get('/', optionalAuth, getProducts);
 
 // AUTOS
-router.get('/autos', getFilteredProducts);
+router.get('/autos', optionalAuth, getFilteredProducts);
 
 // DETAILS
 router.get('/details/:id', optionalAuth, getProductDetails)
-router.get('/similars/:id', getSimilarProducts);
-router.get('/:id/click', clickProduct)
+router.get('/similars/:id', optionalAuth, getSimilarProducts);
 router.get('/user/product/:id', auth, getUserProduct)
 
 // METADATA

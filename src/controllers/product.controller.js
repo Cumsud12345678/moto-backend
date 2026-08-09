@@ -24,12 +24,16 @@ const getProducts = async (req, res, next) => {
 // AUTOS
 const getFilteredProducts = async (req, res, next) => {
   try{
-    const data = await productService.getFilteredProducts(req.query)
-    const formattedProducts = data.map(product => ({
+    const userId = req.user?.id || null
+    const page = Number(req.query.page) || 1
+    const limit = Number(req.query.limit) || 10
+
+    const {products, total} = await productService.getFilteredProducts(req.query, userId, page, limit)
+    const formattedProducts = products.map(product => ({
       ...product,
       createdAt: formatDate(product.createdAt)
     }))
-    res.status(200).json({success: true, data: formattedProducts})
+    res.status(200).json({success: true, data: formattedProducts, total})
   }catch(err){
     next(err)
   }
@@ -49,8 +53,12 @@ const getMetadata = async (req, res, next) => {
 const getProductDetails = async (req, res, next) => {
   try{
     const userId = req.user?.id || null
-    const data = await productService.getProductDetails(req.params.id, userId)
-    res.status(200).json({ success: true, data: data })
+    let ids = null
+    if(userId) {
+      ids = await productService.getFavoritesIDS(userId)
+    }
+    const data = await productService.getDetailsById(req.params.id)
+    res.status(200).json({ success: true, data: data, ids: ids })
   }catch(err){
     next(err)
   }
@@ -59,10 +67,13 @@ const getProductDetails = async (req, res, next) => {
 // SIMILARS
 const getSimilarProducts = async (req, res, next) => {
   try{
-    const details = await productService.getProductDetails(req.params.id)
+    const userId = req.user?.id || null
+    const limit = 12
+
+    const details = await productService.getDetailsById(req.params.id)
     if (!details) return res.status(404).json({ success: false, message: "Elan tapılmadı" });
 
-    const similarProducts = await productService.getSimilarProducts(details.product)
+    const similarProducts = await productService.getSimilarProducts(details, limit, userId)
 
     const formattedProducts = similarProducts.map(product => ({
       ...product,
@@ -70,15 +81,6 @@ const getSimilarProducts = async (req, res, next) => {
     }))
     
     res.status(200).json({ success: true, data: formattedProducts})
-  }catch(err){
-    next(err)
-  }
-}
-
-const clickProduct = async (req, res, next) => {
-  try{
-    const success = await productService.clickProduct(req.params.id)
-    res.status(200).json({success})
   }catch(err){
     next(err)
   }
@@ -147,7 +149,7 @@ const getFavoritesNotLogin = async (req, res, next) => {
 // PROFILE
 const deleteProduct = async (req, res, next) => {
   try{
-    const {product} = await productService.getProductDetails(req.params.id)
+    const {product} = await productService.getDetailsById(req.params.id)
     if (product.user._id.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: 'İcazəniz yoxdur' })
     }
@@ -192,7 +194,7 @@ const updateProduct = async (req, res, next) => {
   try {
     const productId = req.params.id
 
-    const product = await productService.getProductDetails(productId)
+    const product = await productService.getDetailsOne(productId)
     if (!product) {
       return res.status(404).json({ success: false, message: 'Elan tapılmadı' })
     }
@@ -299,8 +301,6 @@ module.exports = {
   getFilteredProducts,
 
   getSimilarProducts,
-
-  clickProduct,
   
   getMetadata,
 
