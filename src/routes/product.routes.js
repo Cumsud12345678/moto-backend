@@ -53,6 +53,7 @@ router.post('/create', auth, upload.array('images', 10), createProduct);
 router.get('/user/:id', auth, getUserProducts)
 router.delete('/delete/:id', auth, deleteProduct);
 router.put('/update/:id', auth,  upload.array('newImages'), updateProduct)
+router.get('/click/:id', clickProduct)
 
 // Sitemap
 router.get('/sitemap.xml', async (req, res) => {

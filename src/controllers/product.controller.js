@@ -194,7 +194,7 @@ const updateProduct = async (req, res, next) => {
   try {
     const productId = req.params.id
 
-    const product = await productService.getDetailsOne(productId)
+    const product = await productService.getDetailsOne({_id: productId})
     if (!product) {
       return res.status(404).json({ success: false, message: 'Elan tapılmadı' })
     }
@@ -276,6 +276,15 @@ const updateProduct = async (req, res, next) => {
   }
 }
 
+const clickProduct = async (req, res, next) => {
+  try{
+    const updatedProduct = await productService.clickProduct(req.params.id)
+    res.status(200).json({success: true})
+  }catch(err){
+    next(err)
+  }
+}
+
 const sitemap = async (req, res) => {
   const products = await Product.find({ isActive: true }).select('_id updatedAt')
   const urls = products.map(p => `
@@ -314,5 +323,7 @@ module.exports = {
 
   updateProduct,
 
-  getProductDetails
+  getProductDetails,
+
+  clickProduct
 }

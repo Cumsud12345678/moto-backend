@@ -288,6 +288,10 @@ const getUserProducts = async (id) => {
   return await getProducts({user: id})
 }
 
+const clickProduct = async (id) => {
+  return await updateProduct(id, {$inc: {views: 1}})
+}
+
 // Builds
 const buildPipeline = (filter, sort, skip, limit, userId) => {
 
@@ -412,5 +416,7 @@ module.exports = {
   getUserProducts,
   getUserProduct,
 
-  updateProduct
+  updateProduct,
+
+  clickProduct
 }
