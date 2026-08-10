@@ -149,7 +149,7 @@ const getFavoritesNotLogin = async (req, res, next) => {
 // PROFILE
 const deleteProduct = async (req, res, next) => {
   try{
-    const {product} = await productService.getDetailsById(req.params.id)
+    const product = await productService.getDetailsById(req.params.id)
     if (product.user._id.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: 'İcazəniz yoxdur' })
     }
