@@ -1,6 +1,7 @@
 const Product = require('../../models/product.model')
 const User = require('../../models/user.model')
 const DeletedProduct = require('../../models/delete.product.model')
+const Favori = require('../../models/favori.model')
 const path = require('path')
 const fs = require('fs/promises')
 const { default: mongoose } = require('mongoose')
@@ -98,6 +99,8 @@ const deleteProduct = async (id, text) => {
       }
     }
   }
+
+  await Favori.deleteMany({product: product._id})
   
   return await Product.findByIdAndDelete(id)
 }

@@ -1,7 +1,11 @@
 const Adsense = require('../../models/adsense.model')
 
-const getAdsense = async () => {
+const getAllAdsense = async () => {
   return await Adsense.find().lean()
+}
+
+const getAdsenseById = async (id) => {
+  return await Adsense.findById(id)
 }
 
 const createAdsense = async (data) => {
@@ -18,11 +22,13 @@ const clickAdsense = async (id) => {
 }
 
 const deleteAdsense = async (id) => {
-  return await Adsense.findByIdAndDelete(id)
+  await Adsense.findByIdAndDelete(id)
+  return true
 }
 
 module.exports = {
-  getAdsense,
+  getAllAdsense,
+  getAdsenseById,
   createAdsense, 
   clickAdsense,
   deleteAdsense

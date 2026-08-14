@@ -266,6 +266,8 @@ const deleteProduct = async (id) => {
     }
   }
 
+  await Favori.deleteMany({product: product._id})
+
   await Product.findByIdAndDelete(id);
   return 'Silindi'
 

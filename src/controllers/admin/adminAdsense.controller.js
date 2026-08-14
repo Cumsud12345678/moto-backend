@@ -1,9 +1,11 @@
 const adminAdsenseService = require('../../services/admin/adminAdsense.service')
 const formatDate = require("../../utils/dateFormatter");
+const path = require('path')
+const fs = require('fs/promises')
 
 const getAdsense = async (req, res, next) => {
   try{
-    const data = await adminAdsenseService.getAdsense()
+    const data = await adminAdsenseService.getAllAdsense()
     const formattedData = data.map(ads => ({
       ...ads,
       createdAt: formatDate(ads.createdAt)
@@ -37,8 +39,23 @@ const clickAdsense = async (req, res, next) => {
 
 const deleteAdsense = async (req, res, next) => {
   try{
+    const adsense = await adminAdsenseService.getAdsenseById(req.params.id)
+    if(!adsense) {
+      res.status(404).json({message: 'Reklam tapilmadi'})
+    }
+
     const success = await adminAdsenseService.deleteAdsense(req.params.id)
-    res.status(200).json({success})
+
+    if(success) {
+      const imagePath = path.join(__dirname, '../../uploads', adsense.image)
+      try {
+        await fs.unlink(imagePath)
+      } catch (err) {
+        console.log(err)
+      }
+
+      res.status(200).json({success})
+    }
   }catch(err) {
     next(err)
   }

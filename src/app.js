@@ -67,7 +67,7 @@ app.use(cookieParser())
 
 mongoDB()
 
-app.use('/api', globalLimiter)
+// app.use('/api', globalLimiter)
 
 app.use('/api/users', userRouter)
 app.use('/api/products', productRouter)

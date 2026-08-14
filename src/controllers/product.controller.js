@@ -153,6 +153,7 @@ const deleteProduct = async (req, res, next) => {
     if (product.user._id.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: 'İcazəniz yoxdur' })
     }
+
     const message = await productService.deleteProduct(req.params.id)
     res.status(200).json({ success: true, message: message })
   }catch(err){
