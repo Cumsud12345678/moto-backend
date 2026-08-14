@@ -161,8 +161,8 @@ const getSimilarProducts = async (details, limit = 8, userId) => {
   const pipelineMM = buildPipeline(
     {
       _id: { $ne: _id },
-      makeId,
-      modelId,
+      make: makeId,
+      model: modelId,
       isActive: true
     },
     {createdAt: -1}, 0, limit, userId
@@ -175,7 +175,7 @@ const getSimilarProducts = async (details, limit = 8, userId) => {
     const pipelineM = buildPipeline(
       {
         _id: { $ne: _id, $nin: similar.map(p => p._id) },
-        makeId,
+        make: makeId,
         isActive: true
       },
       {createdAt: -1}, 0, limit, userId
@@ -194,7 +194,7 @@ const getSimilarProducts = async (details, limit = 8, userId) => {
         _id: { $ne: _id, $nin: similar.map(p => p._id) },
         isActive: true,
         $or: [
-          {categoryId},
+          {category: categoryId},
           {
             price: priceRange
           }
