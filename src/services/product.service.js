@@ -93,63 +93,6 @@ const getFavoritesIDS = async (userId) => {
   return ids = await Favori.find({ user: userId }).distinct("product");
 }
 
-// const getSimilarProducts = async (details, limit = 8) => {
-//   const { _id, make, model, category, price } = details;
-
-//   // Make && Model e gore
-//   let similar = await Product.find({
-//     _id: { $ne: _id },
-//     make,
-//     model,
-//     isActive: true
-//   })
-//   .populate('make')
-//   .populate({ path: 'model', select: 'label' })
-//   .populate('city')
-//   .limit(limit)
-//   .lean()
-
-//   // Make ye gore
-//   if(similar.length < limit) {
-//     const more = await Product.find({
-//       _id: { $ne: _id, $nin: similar.map(p => p._id) },
-//       make,
-//       isActive: true
-//     })
-//     .populate('make')
-//     .populate({ path: 'model', select: 'label' })
-//     .populate('city')
-//     .limit(limit - similar.length)
-//     .lean()
-
-//     similar = [...similar,...more]
-//   }
-
-//   // Price && Category
-//   if(similar.length < limit){
-//     const priceRange = { $gte: price * 0.7, $lte: price * 1.7 }
-//     const more = await Product.find({
-//       _id: { $ne: _id, $nin: similar.map(p => p._id) },
-//       isActive: true,
-//       $or: [
-//         {category},
-//         {
-//           price: priceRange
-//         }
-//       ]
-//     })
-//     .populate('make')
-//     .populate({ path: 'model', select: 'label' })
-//     .populate('city')
-//     .limit(limit - similar.length)
-//     .lean()
-
-//     similar = [...similar, ...more]
-//   }
-
-//   return similar;
-// }
-
 const getSimilarProducts = async (details, limit = 8, userId) => {
   const { _id, make, model, category, price } = details;
 

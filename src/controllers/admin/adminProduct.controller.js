@@ -53,7 +53,8 @@ const getUserProducts = async (req, res, next) => {
 
 const deactiveProduct = async (req, res, next) => {
   try{
-    const updatedProduct = await adminProductService.deactiveProduct(req.params.id)
+    const message = req.body.message
+    const updatedProduct = await adminProductService.deactiveProduct(req.params.id, message)
     if(updatedProduct.isActive) return res.status(500).json({ success: false, message: 'Bir xəta baş verdi' })
     res.status(200).json({ success: true })
   }catch(err){

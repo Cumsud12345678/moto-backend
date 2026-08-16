@@ -57,10 +57,11 @@ const getUserProducts = async (id) => {
   .populate('user')
 }
 
-const deactiveProduct = async (id) => {
+const deactiveProduct = async (id, message) => {
   return await Product.findByIdAndUpdate(id, 
     { 
       isActive: false,
+      message,
       deactiveAt: new Date()
     },
     { returnDocument: 'after' }

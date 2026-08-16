@@ -57,7 +57,7 @@ const deleteFavori = async (data) => {
 }
 
 const getFavorites = async (id) => {
-  return await Favori.find({user: id}).populate({
+  return await Favori.find({user: id, isActive: true}).populate({
     path: 'product',
     populate: [
       { path: 'make' },
