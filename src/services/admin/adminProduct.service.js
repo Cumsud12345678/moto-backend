@@ -72,6 +72,7 @@ const activeProduct = async (id) => {
   return await Product.findByIdAndUpdate(id, 
     { 
       isActive: true,
+      message: null,
       deactiveAt: null
     },
     { returnDocument: 'after' }

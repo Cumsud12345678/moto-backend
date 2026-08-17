@@ -11,6 +11,7 @@ const mongoDB = require('./config/db.config')
 require('dotenv').config()
 
 // User Routes
+const authRouter = require('./routes/auth.routes')
 const userRouter = require('./routes/user.routes')
 const productRouter = require('./routes/product.routes')
 
@@ -69,6 +70,7 @@ mongoDB()
 
 // app.use('/api', globalLimiter)
 
+app.use('/api/auth', authRouter)
 app.use('/api/users', userRouter)
 app.use('/api/products', productRouter)
 

@@ -1,19 +1,5 @@
-const User = require('../models/user.model')
 const Product = require('../models/product.model')
-const City = require('../models/city.model')
 const Favori = require('../models/favori.model')
-
-const getUser = async (email) => {
-  return await User.findOne({email: email})
-}
-
-const getUserById = async (id) => {
-  return await User.findById(id)
-}
-
-const createUser = async (userData) => {
-  return await User.create(userData)
-}
 
 const setFavori = async ({data, type, id=null}) => {
   
@@ -68,19 +54,8 @@ const getFavorites = async (id) => {
 }
 
 
-const updateUser = async (id, data) => {
-  return await User.findByIdAndUpdate(id, data, {returnDocument: 'after', runValidators: true})
-}
-
-
 module.exports = {
-  getUser,
-  getUserById,
-  createUser,
-
   setFavori,
   deleteFavori,
   getFavorites,
-
-  updateUser
 }
