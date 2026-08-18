@@ -221,9 +221,9 @@ const updateProduct = async (id, data) => {
 }
 
 // BOOKMARKS PAGE
-const getFavoritesNotLogin = async(favorites) => {
-  return getProducts({ _id: { $in: favorites }, isActive: true })
-}
+// const getFavoritesNotLogin = async(favorites) => {
+//   return getProducts({ _id: { $in: favorites }, isActive: true })
+// }
 
 const getUserProduct = async (id, userId) => {
   return await getDetailsOne({ _id: id, user: userId })
@@ -352,7 +352,7 @@ module.exports = {
 
   getMetadata,
 
-  getFavoritesNotLogin,
+  // getFavoritesNotLogin,
 
   createProduct,
 

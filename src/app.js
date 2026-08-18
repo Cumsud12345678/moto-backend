@@ -12,7 +12,7 @@ require('dotenv').config()
 
 // User Routes
 const authRouter = require('./routes/auth.routes')
-const userRouter = require('./routes/user.routes')
+const favoriteRouter = require('./routes/favorite.routes')
 const productRouter = require('./routes/product.routes')
 
 // Admin Routes
@@ -71,7 +71,7 @@ mongoDB()
 // app.use('/api', globalLimiter)
 
 app.use('/api/auth', authRouter)
-app.use('/api/users', userRouter)
+app.use('/api/favorites', favoriteRouter)
 app.use('/api/products', productRouter)
 
 app.use('/api/admin/users', auth, isAdmin, adminUserRouter)

@@ -132,19 +132,19 @@ const createProduct = async (req, res, next) => {
 }
 
 // BOOKMARKAS PAGE
-const getFavoritesNotLogin = async (req, res, next) => {
-  try{
-    const { favorites } = req.body
-    const data = await productService.getFavoritesNotLogin(favorites)
-    const formattedProducts = data.map(product => ({
-      ...product,
-      createdAt: formatDate(product.createdAt)
-    }))
-    res.status(200).json({ success: true, data: formattedProducts })
-  }catch(err){
-    next(err)
-  }
-}
+// const getFavoritesNotLogin = async (req, res, next) => {
+//   try{
+//     const { favorites } = req.body
+//     const data = await productService.getFavoritesNotLogin(favorites)
+//     const formattedProducts = data.map(product => ({
+//       ...product,
+//       createdAt: formatDate(product.createdAt)
+//     }))
+//     res.status(200).json({ success: true, data: formattedProducts })
+//   }catch(err){
+//     next(err)
+//   }
+// }
 
 // PROFILE
 const deleteProduct = async (req, res, next) => {
@@ -314,7 +314,7 @@ module.exports = {
   
   getMetadata,
 
-  getFavoritesNotLogin,
+  // getFavoritesNotLogin,
   createProduct,
 
   deleteProduct,

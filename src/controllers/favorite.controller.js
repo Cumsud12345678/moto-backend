@@ -1,4 +1,4 @@
-const userService = require('../services/user.service')
+const favoriteService = require('../services/favorite.service')
 const fs = require("fs");
 const path = require("path");
 const formatDate = require("../utils/dateFormatter");
@@ -10,13 +10,13 @@ const setFavori = async (req, res, next) => {
     let success = null
     
     if(Array.isArray(req.body.data)){
-      success = await userService.setFavori({data: req.body.data, type: 'array', id: req.user.id})
+      success = await favoriteService.setFavori({data: req.body.data, type: 'array', id: req.user.id})
     }else{
       const data = {
         user: req.user.id,
         product: req.body.data
       }
-      success = await userService.setFavori({data: data, type: 'string'})
+      success = await favoriteService.setFavori({data: data, type: 'string'})
     }
     
     res.status(200).json({ success, message: 'Uğurla əlavə olundu' })
@@ -33,7 +33,7 @@ const deleteFavori = async (req, res, next) => {
       product: req.params.id
     }
 
-    const success = await userService.deleteFavori(data)
+    const success = await favoriteService.deleteFavori(data)
     res.status(200).json({ success, message: 'Uğurla silindi' })
   }catch(err){
     next(err)
@@ -42,7 +42,8 @@ const deleteFavori = async (req, res, next) => {
 
 const getFavorites = async (req, res, next) => {
   try{
-    const products = await userService.getFavorites(req.user.id)
+    
+    const products = await favoriteService.getFavorites(req.user.id)
     const formattedProducts = products.map(item => ({
       ...item,
       product: {
@@ -56,9 +57,25 @@ const getFavorites = async (req, res, next) => {
   }
 }
 
+const getFavoritesNotLogin = async (req, res, next) => {
+  try{
+    const { favorites } = req.body
+    const data = await favoriteService.getFavoritesNotLogin(favorites)
+    const formattedProducts = data.map(product => ({
+      ...product,
+      createdAt: formatDate(product.createdAt)
+    }))
+    res.status(200).json({ success: true, data: formattedProducts })
+  }catch(err){
+    next(err)
+  }
+}
+
 
 module.exports = {
   setFavori,
   deleteFavori,
   getFavorites,
+
+  getFavoritesNotLogin 
 }

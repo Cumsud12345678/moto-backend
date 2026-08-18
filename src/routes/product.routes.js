@@ -15,7 +15,7 @@ const {
 
   getMetadata,
   deleteProduct,
-  getFavoritesNotLogin,
+  // getFavoritesNotLogin,
 
   getFilteredProducts,
 
@@ -44,7 +44,7 @@ router.get('/user/product/:id', auth, getUserProduct)
 router.get('/metadata', getMetadata);
 
 // BOOKMARKS KAYITSIZ USERLER UCUN
-router.post('/not/login/favorites', getFavoritesNotLogin);
+// router.post('/not/login/favorites', getFavoritesNotLogin);
 
 // NEW
 router.post('/create', auth, upload.array('images', 10), createProduct);

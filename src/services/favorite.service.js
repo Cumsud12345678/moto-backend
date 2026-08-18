@@ -1,6 +1,14 @@
 const Product = require('../models/product.model')
 const Favori = require('../models/favori.model')
 
+const getProducts = async (filter) => {
+  return products = await Product.find(filter)
+  .populate('make')
+  .populate('model')
+  .populate('city')
+  .lean()
+}
+
 const setFavori = async ({data, type, id=null}) => {
   
   if(type == 'array'){
@@ -43,14 +51,22 @@ const deleteFavori = async (data) => {
 }
 
 const getFavorites = async (id) => {
-  return await Favori.find({user: id, isActive: true}).populate({
+  const favorites = await Favori.find({user: id}).populate({
     path: 'product',
+    match: { isActive: true },
     populate: [
       { path: 'make' },
       { path: 'model' },
       { path: 'city' }
     ]
   }).lean()
+
+  return favorites.filter(f => f.product !== null)
+}
+
+
+const getFavoritesNotLogin = async(favorites) => {
+  return getProducts({ _id: { $in: favorites }, isActive: true })
 }
 
 
@@ -58,4 +74,6 @@ module.exports = {
   setFavori,
   deleteFavori,
   getFavorites,
+
+  getFavoritesNotLogin
 }
