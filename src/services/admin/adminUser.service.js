@@ -4,6 +4,7 @@ const Favorite = require('../../models/favori.model')
 const DeletedUser = require('../../models/delete.user.model')
 const path = require('path')
 const fs = require('fs')
+const { UPLOAD_DIR } = require('../../middlewares/upload.middleware');
 
 const getUsers = async (skip, limit) => {
   const [users, total] = await Promise.all([
@@ -85,7 +86,7 @@ const deleteUser = async (id, desc) => {
     description: desc
   })
   if(user.profile){
-    const profilePath = path.join(__dirname, '../../uploads', user.profile)
+    const profilePath = path.join(UPLOAD_DIR, user.profile)
     fs.unlink(profilePath, (err) => {
       if (err) console.error('Köhnə şəkil silinmədi:', err.message)
     })

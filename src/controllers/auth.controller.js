@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const formatDate = require("../utils/dateFormatter");
 const { sendOtpEmail } = require('../services/sendOtpMail.service')
+const { UPLOAD_DIR } = require('../middlewares/upload.middleware');
 
 const generateAndSendOtp = async (email, type) => {
   const otp = String(Math.floor(100000 + Math.random() * 900000));
@@ -289,7 +290,7 @@ const updateUser = async (req, res, next) => {
 
     // köhnə şəkli sil — yalnız yeni fayl yükləndikdə VƏ köhnə şəkil default olmadıqda
     if (req.file && user.profile) {
-      const oldPath = path.join(__dirname, '../uploads', user.profile)
+      const oldPath = path.join(UPLOAD_DIR, user.profile)
       fs.unlink(oldPath, (err) => {
         if (err) console.error('Köhnə şəkil silinmədi:', err.message)
       })

@@ -15,6 +15,7 @@ const DeletedProduct = require('../models/delete.product.model')
 const fs = require('fs/promises');
 const path = require('path')
 const mongoose = require('mongoose')
+const { UPLOAD_DIR } = require('../middlewares/upload.middleware')
 
 
 // HOME PAGE
@@ -200,7 +201,7 @@ const deleteProduct = async (id) => {
 
   for(const image of product.images){
     
-    const imagePath = path.join(__dirname, '../uploads', image)
+    const imagePath = path.join(UPLOAD_DIR, image)
 
     try{
       await fs.unlink(imagePath)
@@ -351,8 +352,6 @@ module.exports = {
   getSimilarProducts,
 
   getMetadata,
-
-  // getFavoritesNotLogin,
 
   createProduct,
 

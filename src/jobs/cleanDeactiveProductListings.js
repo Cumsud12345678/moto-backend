@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const path = require('path')
 const fs = require('fs/promises')
 const Product = require('../models/product.model')
+const { UPLOAD_DIR } = require('../middlewares/upload.middleware');
 
 const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000
 
@@ -17,7 +18,7 @@ async function cleanExpiredDeactiveProducts(params) {
 
   for (const product of expirderProducts) {
     for (const image of product.images || []) {
-      const imagePath = path.join(__dirname, '../uploads', image)
+      const imagePath = path.join(UPLOAD_DIR, image)
       try {
         await fs.unlink(imagePath)
       } catch (err) {

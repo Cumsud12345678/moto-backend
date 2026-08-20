@@ -1,7 +1,9 @@
 const productService = require('../services/product.service');
+const Product = require('../models/product.model');
 const fs = require("fs");
 const path = require("path");
 const formatDate = require("../utils/dateFormatter");
+const { UPLOAD_DIR } = require('../middlewares/upload.middleware');
 
 // HOME
 const getProducts = async (req, res, next) => {
@@ -86,6 +88,13 @@ const getSimilarProducts = async (req, res, next) => {
   }
 }
 
+const cleanupFiles = (files) => {
+  if (!files) return
+  files.forEach(f => {
+    fs.unlink(f.path, () => {})
+  })
+}
+
 // NEW PRODUCT
 const createProduct = async (req, res, next) => {
   try{
@@ -95,27 +104,35 @@ const createProduct = async (req, res, next) => {
     } = req.body
 
     if(!make || !model || !year || !volume || !phone){
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Marka, model, il, həcm və nömrə məlumatlarıı tam deyil' })
     }
     if(!category || !status || !color || !fuel || !speed){
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Bütün kateqoriya/rəng/yanacaq/sürətlər qutusu sahələri doldurulmalıdır' })
     }
     if(!city){
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Şəhər seçilməlidir' })
     }
     if(!price || Number(price) <= 0){
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Qiymət düzgün deyil' })
     }
     if(!power || Number(power) <= 0){
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Mühərrikin gücü düzgün deyil' })
     }
     if(mileage === undefined || mileage === null || Number(mileage) < 0){
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Yürüş düzgün deyil' })
     }
     if(!description || description.trim().length === 0){
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Açıqlama yazılmalıdır' })
     }
     if(!req.files || req.files.length === 0){
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Ən azı 1 şəkil əlavə edin' })
     }
 
@@ -127,30 +144,16 @@ const createProduct = async (req, res, next) => {
     });
     res.status(200).json({ success: true, data: product });
   }catch(error){
+    cleanupFiles(req.files)
     next(error);
   }
 }
-
-// BOOKMARKAS PAGE
-// const getFavoritesNotLogin = async (req, res, next) => {
-//   try{
-//     const { favorites } = req.body
-//     const data = await productService.getFavoritesNotLogin(favorites)
-//     const formattedProducts = data.map(product => ({
-//       ...product,
-//       createdAt: formatDate(product.createdAt)
-//     }))
-//     res.status(200).json({ success: true, data: formattedProducts })
-//   }catch(err){
-//     next(err)
-//   }
-// }
 
 // PROFILE
 const deleteProduct = async (req, res, next) => {
   try{
     const product = await productService.getDetailsById(req.params.id)
-    if (product.user._id.toString() !== req.user.id) {
+    if (product.user._id.toString() !== req.user.id || !product.isActive) {
       return res.status(403).json({ success: false, message: 'İcazəniz yoxdur' })
     }
 
@@ -197,11 +200,17 @@ const updateProduct = async (req, res, next) => {
 
     const product = await productService.getDetailsOne({_id: productId})
     if (!product) {
+      cleanupFiles(req.files)
       return res.status(404).json({ success: false, message: 'Elan tapılmadı' })
+    }
+    if(!product.isActive) {
+      cleanupFiles(req.files)
+      return res.status(403).json({ success: false, message: 'Yetkiniz yoxdur' })
     }
 
     // 🔴 IDOR düzəlişi — sahiblik yoxlanılmalıdır
     if (product.user._id.toString() !== req.user.id) {
+      cleanupFiles(req.files)
       return res.status(403).json({ success: false, message: 'İcazəniz yoxdur' })
     }
 
@@ -219,27 +228,35 @@ const updateProduct = async (req, res, next) => {
     const { price, mileage, description, fuel, speed, city, color } = req.body
 
     if (!price || Number(price) <= 0) {
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Qiymət düzgün deyil' })
     }
     if (mileage === undefined || mileage === null || mileage === '' || Number(mileage) < 0) {
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Yürüş düzgün deyil' })
     }
     if (!description || description.trim().length === 0) {
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Açıqlama yazılmalıdır' })
     }
     if (finalImages.length === 0) {
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'En azi 1 sekil olmalidir' })
     }
     if (!fuel) {
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Yanacaq növü seçilməlidir' })
     }
     if (!speed) {
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Sürətlər qutusu seçilməlidir' })
     }
     if (!color) {
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Rəng seçilməlidir' })
     }
     if (!city) {
+      cleanupFiles(req.files)
       return res.status(400).json({ success: false, message: 'Şəhər seçilməlidir' })
     }
 
@@ -256,7 +273,7 @@ const updateProduct = async (req, res, next) => {
 
     removedImages.forEach(img => {
       const fileName = path.basename(img)
-      const filePath = path.join(__dirname, '../uploads', fileName)
+      const filePath = path.join(UPLOAD_DIR, fileName)
 
       fs.unlink(filePath, (err) => {
         if (err) {
@@ -273,6 +290,7 @@ const updateProduct = async (req, res, next) => {
 
     res.status(200).json({ success: true, data: updatedProduct })
   } catch (err) {
+    cleanupFiles(req.files)
     next(err)
   }
 }
@@ -286,22 +304,29 @@ const clickProduct = async (req, res, next) => {
   }
 }
 
-const sitemap = async (req, res) => {
-  const products = await Product.find({ isActive: true }).select('_id updatedAt')
-  const urls = products.map(p => `
-    <url>
-      <loc>https://sənin-domenin.com/elanlar/${p._id}</loc>
-      <lastmod>${p.updatedAt.toISOString()}</lastmod>
-    </url>
-  `).join('')
+// SITEMAP
+// Domeni .env-dən oxuyur — hardcode yoxdur, dev/prod arasında rahat keçid olur
+const SITE_URL = process.env.SITE_URL || 'https://sənin-domenin.com'
 
-  res.header('Content-Type', 'application/xml')
-  res.send(`<?xml version="1.0" encoding="UTF-8"?>
-    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-      <url><loc>https://sənin-domenin.com/</loc></url>
-      <url><loc>https://sənin-domenin.com/autos</loc></url>
-      ${urls}
-    </urlset>`)
+const sitemap = async (req, res, next) => {
+  try {
+    const products = await Product.find({ isActive: true }).select('_id updatedAt').lean()
+
+    const urls = products.map(p => `
+    <url>
+      <loc>${SITE_URL}/elanlar/${p._id}</loc>
+      <lastmod>${p.updatedAt ? p.updatedAt.toISOString() : new Date().toISOString()}</lastmod>
+    </url>`).join('')
+
+    res.header('Content-Type', 'application/xml')
+    res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>${SITE_URL}/</loc></url>
+  <url><loc>${SITE_URL}/autos</loc></url>${urls}
+</urlset>`)
+  } catch (err) {
+    next(err)
+  }
 }
 
 
@@ -314,7 +339,6 @@ module.exports = {
   
   getMetadata,
 
-  // getFavoritesNotLogin,
   createProduct,
 
   deleteProduct,
@@ -326,5 +350,7 @@ module.exports = {
 
   getProductDetails,
 
-  clickProduct
+  clickProduct,
+
+  sitemap
 }

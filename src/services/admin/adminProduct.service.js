@@ -5,6 +5,7 @@ const Favori = require('../../models/favori.model')
 const path = require('path')
 const fs = require('fs/promises')
 const { default: mongoose } = require('mongoose')
+const { UPLOAD_DIR } = require('../../middlewares/upload.middleware');
 
 const getProducts = async (skip, limit) => {
   const [products, total] = await Promise.all([
@@ -89,7 +90,7 @@ const deleteProduct = async (id, text) => {
   })
 
   for(const image of product.images) {
-    const imagePath = path.join(__dirname, "../../uploads", image)
+    const imagePath = path.join(UPLOAD_DIR, image)
 
     try{
       await fs.unlink(imagePath)

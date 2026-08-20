@@ -2,6 +2,7 @@ const { models } = require('mongoose')
 const adminMetadataService = require('../../services/admin/adminMetadata.service')
 const path = require('path')
 const fs = require('fs/promises')
+const { UPLOAD_DIR } = require('../../middlewares/upload.middleware');
 
 const getMetadata = async (req, res, next) => {
   try{
@@ -33,7 +34,7 @@ const deleteMetadata = async (req, res, next) => {
   try{
     if(req.body.data.type == 'makes'){
       const make = await adminMetadataService.getMake(req.body.data.id)
-      const deletedPath = path.join(__dirname, '../../uploads', make.logo)
+      const deletedPath = path.join(UPLOAD_DIR, make.logo)
       try {
         await fs.unlink(deletedPath);
       } catch (err) {

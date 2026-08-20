@@ -2,6 +2,7 @@ const adminAdsenseService = require('../../services/admin/adminAdsense.service')
 const formatDate = require("../../utils/dateFormatter");
 const path = require('path')
 const fs = require('fs/promises')
+const { UPLOAD_DIR } = require('../../middlewares/upload.middleware');
 
 const getAdsense = async (req, res, next) => {
   try{
@@ -47,7 +48,7 @@ const deleteAdsense = async (req, res, next) => {
     const success = await adminAdsenseService.deleteAdsense(req.params.id)
 
     if(success) {
-      const imagePath = path.join(__dirname, '../../uploads', adsense.image)
+      const imagePath = path.join(UPLOAD_DIR, adsense.image)
       try {
         await fs.unlink(imagePath)
       } catch (err) {

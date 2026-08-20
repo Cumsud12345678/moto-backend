@@ -1,9 +1,19 @@
 const multer = require('multer')
 const path = require('path')
+const fs = require('fs')
+
+// Render-də disk mount path: /app/uploads
+// Local development-də .env-də UPLOAD_DIR olmasa, layihə içindəki ../uploads-a yazır
+const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, '../uploads')
+
+// Qovluq mövcud deyilsə yarat (ilk deploy zamanı vacibdir)
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true })
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '../uploads'))
+    cb(null, UPLOAD_DIR)
   },
 
   filename: (req, file, cb) => {
@@ -32,3 +42,4 @@ const upload = multer({
 });
 
 module.exports = upload;
+module.exports.UPLOAD_DIR = UPLOAD_DIR;

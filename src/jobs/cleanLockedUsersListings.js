@@ -3,6 +3,7 @@ const path = require('path')
 const fs = require('fs/promises')
 const User = require('../models/user.model')
 const Product = require('../models/product.model')
+const { UPLOAD_DIR } = require('../middlewares/upload.middleware');
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000
 
@@ -22,7 +23,7 @@ async function cleanExpiredLockedUsers() {
 
   for (const product of productsToDelete) {
     for (const image of product.images || []) {
-      const imagePath = path.join(__dirname, '../uploads', image)
+      const imagePath = path.join(UPLOAD_DIR, image)
       try {
         await fs.unlink(imagePath)
       } catch (err) {

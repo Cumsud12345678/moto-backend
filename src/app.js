@@ -61,8 +61,10 @@ app.use(cors({
   credentials: true
 }));
 
+const { UPLOAD_DIR } = require('./middlewares/upload.middleware');
+
 app.use(express.json({ limit: '1mb' }))
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(UPLOAD_DIR));
 
 app.use(cookieParser())
 
