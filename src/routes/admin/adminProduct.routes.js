@@ -5,10 +5,7 @@ const {
   getProducts,
   getProduct,
   getUserProducts,
-  deactiveProduct,
-  activeProduct,
   deleteProduct,
-  updateProduct,
   getProductStats,
 
   getDeletedProducts,
@@ -19,8 +16,6 @@ const {
 router.get('/', getProducts)
 router.get('/search', getProduct)
 router.get('/user/:id', getUserProducts)
-router.put('/deactive/:id', deactiveProduct)
-router.put('/active/:id', activeProduct)
 router.delete('/delete/:id', deleteProduct)
 router.get('/stats', getProductStats)
 

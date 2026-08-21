@@ -4,14 +4,14 @@ const fs = require('fs/promises')
 const Product = require('../models/product.model')
 const { UPLOAD_DIR } = require('../middlewares/upload.middleware');
 
-const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 
 async function cleanExpiredDeactiveProducts(params) {
-  const cutoff = new Date(Date.now() - FIVE_DAYS_MS)
+  const cutoff = new Date(Date.now() - SEVEN_DAYS_MS)
 
   const expirderProducts = await Product.find({
-    isActive: false,
-    deactiveAt: { $lte: cutoff }
+    is_active: false,
+    updatedAt: { $lte: cutoff }
   }).select('_id images')
 
   if(expirderProducts.length == 0) return
@@ -35,6 +35,6 @@ async function cleanExpiredDeactiveProducts(params) {
   const result = await Product.deleteMany({_id: { $in: productIds }})
 }
 
-cron.schedule('0 * * * *', cleanExpiredDeactiveProducts);
+cron.schedule('0 0 * * *', cleanExpiredDeactiveProducts);
 
 module.exports = cleanExpiredDeactiveProducts;

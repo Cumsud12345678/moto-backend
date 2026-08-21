@@ -14,16 +14,19 @@ const {
 
   getMetadata,
   deleteProduct,
-  // getFavoritesNotLogin,
 
   getFilteredProducts,
 
   getUserProduct,
   getUserProducts,
+  getUserActiveProducts,
+  getUserDeactiveProducts,
 
   updateProduct,
 
   getProductDetails,
+
+  setActiveProduct,
 
   sitemap,
 
@@ -44,21 +47,21 @@ router.get('/user/product/:id', auth, getUserProduct)
 // METADATA
 router.get('/metadata', getMetadata);
 
-// BOOKMARKS KAYITSIZ USERLER UCUN
-// router.post('/not/login/favorites', getFavoritesNotLogin);
-
 // NEW
 router.post('/create', auth, upload.array('images', 10), createProduct);
 
 // PROFILE
 router.get('/user/:id', auth, getUserProducts)
+router.get('/user/active/:id', auth, getUserActiveProducts)
+router.get('/user/deactive/:id', auth, getUserDeactiveProducts)
+
 router.delete('/delete/:id', auth, deleteProduct);
+router.get('/actived/:id', auth, setActiveProduct)
 router.put('/update/:id', auth,  upload.array('newImages'), updateProduct)
 router.get('/click/:id', clickProduct)
 
 // Sitemap
 router.get('/sitemap.xml', sitemap)
 
-// router.get('/search', getFilteredData)
 
 module.exports = router

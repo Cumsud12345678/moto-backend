@@ -8,7 +8,6 @@ const productSchema = mongoose.Schema({
   volume: Number,
   power: Number,
   phone: Number,
-  message: String,
   images: [String],
   make: { type: mongoose.Schema.Types.ObjectId, ref: 'Make' },
   model: { type: mongoose.Schema.Types.ObjectId, ref: 'Model' },
@@ -20,7 +19,7 @@ const productSchema = mongoose.Schema({
   status: { type: mongoose.Schema.Types.ObjectId, ref: 'Status' },
   equipments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Equipment' }],
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  isActive: {
+  is_active: {
     type: Boolean,
     default: true
   },
@@ -28,18 +27,14 @@ const productSchema = mongoose.Schema({
     type: Number,
     default: 0
   },
-  favoriteCount: { 
+  favorite_count: { 
     type: Number,
     default: 0
   },
-  phoneClicks: { 
+  phone_clicks: { 
     type: Number,
     default: 0
   },
-  deactiveAt: {
-    type: Date,
-    default: null
-  }
 }, {
   timestamps: true,
   toJSON: { virtuals: true },

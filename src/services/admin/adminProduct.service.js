@@ -2,6 +2,7 @@ const Product = require('../../models/product.model')
 const User = require('../../models/user.model')
 const DeletedProduct = require('../../models/delete.product.model')
 const Favori = require('../../models/favori.model')
+const SystemMessage = require('../../models/systemMessage.model')
 const path = require('path')
 const fs = require('fs/promises')
 const { default: mongoose } = require('mongoose')
@@ -58,36 +59,26 @@ const getUserProducts = async (id) => {
   .populate('user')
 }
 
-const deactiveProduct = async (id, message) => {
-  return await Product.findByIdAndUpdate(id, 
-    { 
-      isActive: false,
-      message,
-      deactiveAt: new Date()
-    },
-    { returnDocument: 'after' }
-  )
-}
-
-const activeProduct = async (id) => {
-  return await Product.findByIdAndUpdate(id, 
-    { 
-      isActive: true,
-      message: null,
-      deactiveAt: null
-    },
-    { returnDocument: 'after' }
-  )
-}
-
 // Delete Product
-const deleteProduct = async (id, text) => {
+const deleteProduct = async (id, text, adminId) => {
   const product = await Product.findOne({_id: id}).populate('user')
-  await DeletedProduct.create({
-    user: product.user._id,
-    product_id: id,
-    description: text
-  })
+
+  await Promise.all([
+    DeletedProduct.create({
+      user: product.user._id,
+      product: id,
+      phone: product.phone,
+      reason: text,
+      deletedBy: adminId,
+      type: 'admin'
+    }),
+      
+    SystemMessage.create({
+      type: 'punishment',
+      user: product.user._id,
+      message: text
+    })
+  ])
 
   for(const image of product.images) {
     const imagePath = path.join(UPLOAD_DIR, image)
@@ -104,14 +95,7 @@ const deleteProduct = async (id, text) => {
   }
 
   await Favori.deleteMany({product: product._id})
-  
   return await Product.findByIdAndDelete(id)
-}
-
-const updateProduct = async (id, data) => {
-  return await Product.findByIdAndUpdate(id, data, {
-    returnDocument: 'after'
-  })
 }
 
 const getProductStats = async (startOfDay, onWeekAgo, oneMonthAgo) => {
@@ -143,7 +127,7 @@ const getDeletedProducts = async (skip, limit) => {
 
 const getDeletedProduct = async (query) => {
   const filter = {}
-  if(query.productID) filter.product_id = query.productID;
+  if(query.productID) filter.product = query.productID;
   if(query.phone) {
     filter.phone = query.phone;
   }
@@ -165,10 +149,7 @@ module.exports = {
   getProducts,
   getProduct,
   getUserProducts,
-  deactiveProduct,
-  activeProduct,
   deleteProduct,
-  updateProduct,
   getProductStats,
 
   getDeletedProducts,

@@ -51,39 +51,9 @@ const getUserProducts = async (req, res, next) => {
   }
 }
 
-const deactiveProduct = async (req, res, next) => {
-  try{
-    const message = req.body.message
-    const updatedProduct = await adminProductService.deactiveProduct(req.params.id, message)
-    if(updatedProduct.isActive) return res.status(500).json({ success: false, message: 'Bir xəta baş verdi' })
-    res.status(200).json({ success: true })
-  }catch(err){
-    next(err)
-  }
-}
-
-const activeProduct = async (req, res, next) => {
-  try{
-    const updatedProduct = await adminProductService.activeProduct(req.params.id)
-    if(!updatedProduct.isActive) return res.status(500).json({ success: false, message: 'Bir xəta baş verdi' })
-    res.status(200).json({ success: true })
-  }catch(err){
-    next(err)
-  }
-}
-
 const deleteProduct = async (req, res, next) => {
   try{
-    const deletedProduct = await adminProductService.deleteProduct(req.params.id, req.body.desc)
-    res.status(200).json({ success: true })
-  }catch(err){
-    next(err)
-  }
-}
-
-const updateProduct = async (req, res, next) => {
-  try{
-    const updatedProduct = await adminProductService.updateProduct(req.params.id, req.body)
+    const deletedProduct = await adminProductService.deleteProduct(req.params.id, req.body.desc, req.user.id)
     res.status(200).json({ success: true })
   }catch(err){
     next(err)
@@ -144,10 +114,7 @@ module.exports = {
   getProducts,
   getProduct,
   getUserProducts,
-  deactiveProduct,
-  activeProduct,
   deleteProduct,
-  updateProduct,
   getProductStats,
 
   getDeletedProducts,

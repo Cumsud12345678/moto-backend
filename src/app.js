@@ -12,6 +12,7 @@ require('dotenv').config()
 
 // User Routes
 const authRouter = require('./routes/auth.routes')
+const messageRouter = require('./routes/systemMessage.routes')
 const favoriteRouter = require('./routes/favorite.routes')
 const productRouter = require('./routes/product.routes')
 
@@ -33,6 +34,7 @@ const rateLimit = require('express-rate-limit')
 
 require('./jobs/cleanLockedUsersListings');
 require('./jobs/cleanDeactiveProductListings');
+require('./jobs/timeExpiredProductUpdate');
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -73,6 +75,7 @@ mongoDB()
 // app.use('/api', globalLimiter)
 
 app.use('/api/auth', authRouter)
+app.use('/api/messages', auth, messageRouter)
 app.use('/api/favorites', favoriteRouter)
 app.use('/api/products', productRouter)
 

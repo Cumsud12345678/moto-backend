@@ -153,11 +153,11 @@ const createProduct = async (req, res, next) => {
 const deleteProduct = async (req, res, next) => {
   try{
     const product = await productService.getDetailsById(req.params.id)
-    if (product.user._id.toString() !== req.user.id || !product.isActive) {
+    if (product.user._id.toString() !== req.user.id || !product.is_active) {
       return res.status(403).json({ success: false, message: 'İcazəniz yoxdur' })
     }
 
-    const message = await productService.deleteProduct(req.params.id)
+    const message = await productService.deleteProduct(req.params.id, req.user.id)
     res.status(200).json({ success: true, message: message })
   }catch(err){
     next(err)
@@ -193,6 +193,38 @@ const getUserProducts = async (req, res, next) => {
   }
 }
 
+const getUserActiveProducts = async (req, res, next) => {
+  try{
+    if(req.user.id !== req.params.id){
+      return res.status(403).json({ success: false, message: 'İcazəniz yoxdur' })
+    }
+    const data = await productService.getUserActiveProducts(req.params.id)
+    const formattedProducts = data.map(product => ({
+      ...product,
+      createdAt: formatDate(product.createdAt)
+    }))
+    res.status(200).json({ success: true, data: formattedProducts })
+  } catch (err) {
+    next(err)
+  }
+}
+
+const getUserDeactiveProducts = async (req, res, next) => {
+  try{
+    if(req.user.id !== req.params.id){
+      return res.status(403).json({ success: false, message: 'İcazəniz yoxdur' })
+    }
+    const data = await productService.getUserDeactiveProducts(req.params.id)
+    const formattedProducts = data.map(product => ({
+      ...product,
+      createdAt: formatDate(product.createdAt)
+    }))
+    res.status(200).json({ success: true, data: formattedProducts })
+  } catch (err) {
+    next(err)
+  }
+}
+
 
 const updateProduct = async (req, res, next) => {
   try {
@@ -203,7 +235,7 @@ const updateProduct = async (req, res, next) => {
       cleanupFiles(req.files)
       return res.status(404).json({ success: false, message: 'Elan tapılmadı' })
     }
-    if(!product.isActive) {
+    if(!product.is_active) {
       cleanupFiles(req.files)
       return res.status(403).json({ success: false, message: 'Yetkiniz yoxdur' })
     }
@@ -304,13 +336,22 @@ const clickProduct = async (req, res, next) => {
   }
 }
 
+const setActiveProduct = async (req, res, next) => {
+  try{
+    const activedProduct = await productService.setActiveProduct(req.params.id)
+    res.status(200).json({ success: true, data: activedProduct })
+  }catch(err) {
+    next(err)
+  }
+}
+
 // SITEMAP
 // Domeni .env-dən oxuyur — hardcode yoxdur, dev/prod arasında rahat keçid olur
 const SITE_URL = process.env.SITE_URL || 'https://sənin-domenin.com'
 
 const sitemap = async (req, res, next) => {
   try {
-    const products = await Product.find({ isActive: true }).select('_id updatedAt').lean()
+    const products = await Product.find({ is_active: true }).select('_id updatedAt').lean()
 
     const urls = products.map(p => `
     <url>
@@ -345,12 +386,16 @@ module.exports = {
 
   getUserProduct,
   getUserProducts,
+  getUserActiveProducts,
+  getUserDeactiveProducts,
 
   updateProduct,
 
   getProductDetails,
 
   clickProduct,
+
+  setActiveProduct,
 
   sitemap
 }

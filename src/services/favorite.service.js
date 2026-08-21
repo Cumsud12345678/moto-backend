@@ -21,7 +21,7 @@ const setFavori = async ({data, type, id=null}) => {
 
         await Product.findByIdAndUpdate(prId,
           {
-            $inc: { favoriteCount: 1 }
+            $inc: { favorite_count: 1 }
           }
         )
       })
@@ -32,7 +32,7 @@ const setFavori = async ({data, type, id=null}) => {
     const favori = await Favori.create(data)
     if(favori) {
       await Product.findByIdAndUpdate(data.product, {
-        $inc: { favoriteCount: 1 }
+        $inc: { favorite_count: 1 }
       })
       return true
     }
@@ -40,12 +40,13 @@ const setFavori = async ({data, type, id=null}) => {
 }
 
 const deleteFavori = async (data) => {
-  await Favori.findOneAndDelete(data)
-  await Product.findByIdAndUpdate(data.product,
+  await Promise.all([
+    Favori.findOneAndDelete(data),
+    Product.findByIdAndUpdate(data.product,
     {
-      $inc: { favoriteCount: -1 }
-    }
-  )
+      $inc: { favorite_count: -1 }
+    })
+  ])
 
   return true
 }
@@ -53,7 +54,7 @@ const deleteFavori = async (data) => {
 const getFavorites = async (id) => {
   const favorites = await Favori.find({user: id}).populate({
     path: 'product',
-    match: { isActive: true },
+    match: { is_active: true },
     populate: [
       { path: 'make' },
       { path: 'model' },
@@ -66,7 +67,7 @@ const getFavorites = async (id) => {
 
 
 const getFavoritesNotLogin = async(favorites) => {
-  return getProducts({ _id: { $in: favorites }, isActive: true })
+  return getProducts({ _id: { $in: favorites }, is_active: true })
 }
 
 

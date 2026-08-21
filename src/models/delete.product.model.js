@@ -2,9 +2,15 @@ const mongoose = require('mongoose')
 
 const deletedProductSchema = mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  product: String,
   phone: Number,
-  product_id: String,
-  description: String
+  reason: String,
+  deletedBy: String,
+  type: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  }
 }, {
   timestamps: true
 })

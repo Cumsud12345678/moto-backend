@@ -39,6 +39,6 @@ async function cleanExpiredLockedUsers() {
   const result = await Product.deleteMany({user: { $in: userIds }})
 }
 
-cron.schedule('0 * * * *', cleanExpiredLockedUsers);
+cron.schedule('0 0 * * *', cleanExpiredLockedUsers);
 
 module.exports = cleanExpiredLockedUsers;

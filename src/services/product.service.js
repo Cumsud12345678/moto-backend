@@ -8,7 +8,6 @@ const Speed = require('../models/speed.model')
 const City = require('../models/city.model')
 const Color = require('../models/color.model')
 const Status = require('../models/status.model')
-const User = require('../models/user.model')
 const Equipment = require('../models/equipment.model')
 const DeletedProduct = require('../models/delete.product.model')
 
@@ -22,11 +21,11 @@ const { UPLOAD_DIR } = require('../middlewares/upload.middleware')
 const getAllProduct = async (userId, page = 1, limit = 10) => {
   const skip = (page - 1) * limit
   
-  const pipeline = buildPipeline({isActive: true}, {createdAt: -1}, skip, limit, userId)
+  const pipeline = buildPipeline({is_active: true}, {createdAt: -1}, skip, limit, userId)
   
   const [products, total] = await Promise.all([
     Product.aggregate(pipeline),
-    Product.countDocuments({ isActive: true })
+    Product.countDocuments({ is_active: true })
   ])
   
   const hasMore = skip + products.length < total
@@ -107,7 +106,7 @@ const getSimilarProducts = async (details, limit = 8, userId) => {
       _id: { $ne: _id },
       make: makeId,
       model: modelId,
-      isActive: true
+      is_active: true
     },
     {createdAt: -1}, 0, limit, userId
   )
@@ -120,7 +119,7 @@ const getSimilarProducts = async (details, limit = 8, userId) => {
       {
         _id: { $ne: _id, $nin: similar.map(p => p._id) },
         make: makeId,
-        isActive: true
+        is_active: true
       },
       {createdAt: -1}, 0, limit, userId
     )
@@ -136,7 +135,7 @@ const getSimilarProducts = async (details, limit = 8, userId) => {
     const pipelinePC = buildPipeline(
       {
         _id: { $ne: _id, $nin: similar.map(p => p._id) },
-        isActive: true,
+        is_active: true,
         $or: [
           {category: categoryId},
           {
@@ -189,14 +188,16 @@ const createProduct = async (productData) => {
   return await Product.create(productData)
 }
 
-const deleteProduct = async (id) => {
+const deleteProduct = async (id, userId) => {
   const product = await Product.findById(id).populate('user')
 
   await DeletedProduct.create({
     user: product.user._id,
+    product: id,
     phone: product.phone,
-    product_id: id,
-    description: ''
+    reason: 'User sildi',
+    deletedBy: userId,
+    type: 'user'
   })
 
   for(const image of product.images){
@@ -221,11 +222,6 @@ const updateProduct = async (id, data) => {
   return await Product.findByIdAndUpdate(id, data, { returnDocument: 'after', runValidators: true })
 }
 
-// BOOKMARKS PAGE
-// const getFavoritesNotLogin = async(favorites) => {
-//   return getProducts({ _id: { $in: favorites }, isActive: true })
-// }
-
 const getUserProduct = async (id, userId) => {
   return await getDetailsOne({ _id: id, user: userId })
 }
@@ -234,8 +230,20 @@ const getUserProducts = async (id) => {
   return await getProducts({user: id})
 }
 
+const getUserActiveProducts = async (id) => {
+  return await getProducts({user: id, is_active: true})
+}
+
+const getUserDeactiveProducts = async (id) => {
+  return await getProducts({user: id, is_active: false})
+}
+
 const clickProduct = async (id) => {
   return await updateProduct(id, {$inc: {views: 1}})
+}
+
+const setActiveProduct = async (id) => {
+  return await updateProduct(id, { is_active: true })
 }
 
 // Builds
@@ -299,7 +307,7 @@ const buildFilter = (query) => {
 
   const filter = {}
 
-  filter.isActive = true;
+  filter.is_active = true;
 
   if (make) filter.make = toObjectId(make)
   if (model) filter.model = toObjectId(model)
@@ -358,9 +366,14 @@ module.exports = {
   deleteProduct,
 
   getUserProducts,
+  getUserActiveProducts,
+  getUserDeactiveProducts,
+
   getUserProduct,
 
   updateProduct,
 
-  clickProduct
+  clickProduct,
+
+  setActiveProduct
 }
