@@ -7,7 +7,7 @@ const formatDate = require("../utils/dateFormatter");
 const { sendOtpEmail } = require('../services/sendOtpMail.service')
 const { UPLOAD_DIR } = require('../middlewares/upload.middleware');
 
-const generateAndSendOtp = async (email, type) => {
+const generateAndSendOtp = async (email, type, name,) => {
   const otp = String(Math.floor(100000 + Math.random() * 900000));
   try {
     await sendOtpEmail(email, otp, type)
@@ -21,7 +21,8 @@ const generateAndSendOtp = async (email, type) => {
       `${type}:${email}`,
       JSON.stringify({
         otp,
-        email: email
+        email: email,
+        name: name || ''
       }),
       {
         EX: 120
@@ -121,7 +122,7 @@ const register = async (req, res, next) => {
       return res.status(attemptsErr.status).json({ success: attemptsErr.success, message: attemptsErr.message })
     }
 
-    const OtpResult = await generateAndSendOtp(req.body.email, 'register')
+    const OtpResult = await generateAndSendOtp(req.body.email, 'register', req.body.name)
     res.status(OtpResult.status).json({success: OtpResult.success, message: OtpResult.message})
     
   }catch(err){
