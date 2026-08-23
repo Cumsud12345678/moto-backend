@@ -74,7 +74,7 @@ const deleteProduct = async (id, text, adminId) => {
     }),
       
     SystemMessage.create({
-      type: 'punishment',
+      status: 'danger',
       user: product.user._id,
       message: text
     })

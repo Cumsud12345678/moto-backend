@@ -5,6 +5,6 @@ const {
   getMessages
 } = require('../controllers/systemMessage.controller');
 
-router.get('/', getMessages)
+router.get('/:id', getMessages)
 
 module.exports = router

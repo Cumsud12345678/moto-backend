@@ -36,7 +36,7 @@ const getUser = async (query) => {
 const warningUser = async (id) => {
   const [systemMessage, warningedUser] = await Promise.all([
     SystemMessage.create({ 
-      type: 'punishment', 
+      status: 'warning', 
       user: id, 
       message: 'Müxtəlif səbəblərdən hesabınız Xəbərdarlıq edildi. Bu hal 3 dəfə təkrar olsa hesabınız bloklanacaq.' 
     }),
@@ -49,9 +49,9 @@ const warningUser = async (id) => {
 const lockUser = async (id) => {
   await Promise.all([
     SystemMessage.create({
-      type: 'punishment', 
+      status: 'danger', 
       user: id,
-     message: 'Müxtəlif səbəblərdən hesabınız bloklandı. Ətraflı məlumat üçün dəsdəklə əlaqəyə keçin.'
+      message: 'Müxtəlif səbəblərdən hesabınız bloklandı. Ətraflı məlumat üçün dəsdəklə əlaqəyə keçin.'
     }),
     User.findByIdAndUpdate(id, 
       { isLock: true, lockedAt: new Date() }
@@ -71,7 +71,7 @@ const lockUser = async (id) => {
 const unlockUser = async (id) => {
   const [systemMessage, unlockedUser] = await Promise.all([
     SystemMessage.create({
-      type: 'punishment', 
+      status: 'success', 
       user: id,
       message: 'Hesabınızın kilidi açıldı və xəbərdarlıqlar silindi.'
     }),
@@ -92,7 +92,7 @@ const unlockUser = async (id) => {
 const resetWarningUser = async (id) => {
   await Promise.all([
     SystemMessage.create({
-      type: 'punishment', 
+      type: 'success', 
       user: id,
       message: 'Xəbərdarlıqlar sıfırlandı'
     }),

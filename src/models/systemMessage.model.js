@@ -1,12 +1,16 @@
 const mongoose = require('mongoose')
 
 const systemMessageSchema = mongoose.Schema({
-  type: {
+  status: {
     type: String,
-    enum: ['information', 'punishment', 'success'],
+    enum: ['accent', 'danger', 'warning', 'success'],
     default: 'information'
   },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  views: {
+    type: Boolean,
+    default: false
+  },
   message: String,
 }, {
   timestamps: true
