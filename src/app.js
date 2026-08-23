@@ -42,18 +42,17 @@ const globalLimiter = rateLimit({
 })
 
 const allowedOrigins = [
-  'https://moto-frontend-liart.vercel.app', // production domeniniz
+  'https://motoelan.com',
+  'https://www.motoelan.com',
   process.env.FRONTEND_URL
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true); // Postman kimi alətlər üçün
-    
-    const isAllowed =
-      allowedOrigins.includes(origin) ||
-      /^https:\/\/moto-frontend-.*\.vercel\.app$/.test(origin); // bütün preview-lar
-    
+
+    const isAllowed = allowedOrigins.includes(origin);
+
     if (isAllowed) {
       callback(null, true);
     } else {
