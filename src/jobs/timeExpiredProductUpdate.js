@@ -1,11 +1,11 @@
 const cron = require('node-cron')
 const Product = require('../models/product.model')
 
-// const THIRTY_DAYS_MS = 3 * 24 * 60 * 60 * 1000
-const TEST_DAYS_MS = 2 * 60 * 1000
+const THIRTY_DAYS_MS = 3 * 24 * 60 * 60 * 1000
+// const TEST_DAYS_MS = 2 * 60 * 1000
 
 async function timeExpiredProductUpdate() {
-  const cutoff = new Date(Date.now() - TEST_DAYS_MS)
+  const cutoff = new Date(Date.now() - THIRTY_DAYS_MS)
 
   const expiredProducts = await Product.find({
     is_active: true,
@@ -22,6 +22,6 @@ async function timeExpiredProductUpdate() {
   )
 }
 
-cron.schedule('*/2 * * * *', timeExpiredProductUpdate);
+cron.schedule('0 0 * * *', timeExpiredProductUpdate);
 
 module.exports = timeExpiredProductUpdate;
