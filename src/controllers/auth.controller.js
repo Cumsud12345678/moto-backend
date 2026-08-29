@@ -113,7 +113,7 @@ const register = async (req, res, next) => {
 
     const existing = await redis.get(`register:${req.body.email}`)
     if(existing){
-      // const ttl = await redis.ttl(`register:${req.body.email}`)
+      const ttl = await redis.ttl(`register:${req.body.email}`)
       // return res.status(429).json({success: false, message: `${ttl} saniyə sonra tekrar dənəyin`})
       return res.status(200).json({success: true, message: `Yenidən kod göndərmək üçün ${ttl} saniyə sonra tekrar yoxlayın`})
     }
@@ -168,7 +168,7 @@ const login = async (req, res, next) => {
 
     const existing = await redis.get(`login:${req.body.email}`)
     if(existing){
-      // const ttl = await redis.ttl(`login:${req.body.email}`)
+      const ttl = await redis.ttl(`login:${req.body.email}`)
       // return res.status(429).json({success: false, message: `${ttl} saniyə sonra tekrar dənəyin`})
       return res.status(200).json({success: true, message: `Yenidən kod göndərmək üçün ${ttl} saniyə sonra tekrar yoxlayın`})
     }
