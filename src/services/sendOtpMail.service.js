@@ -12,7 +12,7 @@ const otpEmailTemplate = (otp, purpose = 'qeydiyyat') => `
     <div style="font-size:32px; font-weight:700; letter-spacing:6px; color:#111827; text-align:center; padding:16px 0;">
       ${otp}
     </div>
-    <p style="color:#9ca3af; font-size:12px;">Bu kod 2 dəqiqə ərzində etibarlıdır. Əgər bu tələbi siz etməmisinizsə, bu emaili nəzərə almayın.</p>
+    <p style="color:#9ca3af; font-size:12px;">Bu kod 5 dəqiqə ərzində etibarlıdır. Əgər bu tələbi siz etməmisinizsə, bu emaili nəzərə almayın.</p>
   </div>
 `
 
