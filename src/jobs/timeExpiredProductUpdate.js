@@ -1,7 +1,7 @@
 const cron = require('node-cron')
 const Product = require('../models/product.model')
 
-const THIRTY_DAYS_MS = 3 * 24 * 60 * 60 * 1000
+const THIRTY_DAYS_MS = 100 * 24 * 60 * 60 * 1000
 // const TEST_DAYS_MS = 2 * 60 * 1000
 
 async function timeExpiredProductUpdate() {
