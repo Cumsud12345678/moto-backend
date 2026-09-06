@@ -5,7 +5,8 @@ const fs = require("fs");
 const path = require("path");
 const formatDate = require("../utils/dateFormatter");
 const { sendOtpEmail } = require('../services/sendOtpMail.service')
-const { UPLOAD_DIR } = require('../middlewares/upload.middleware');
+const { uploadToR2, deleteFromR2 } = require('../uploadToR2') // yolu öz strukturunuza uyğun dəyişin
+
 
 const generateAndSendOtp = async (email, type, name,) => {
   const otp = String(Math.floor(100000 + Math.random() * 900000));
@@ -286,17 +287,21 @@ const updateUser = async (req, res, next) => {
     }
 
     if (req.file) {
-      updateData.profile = req.file.filename
+      // faylı R2-yə yükləyirik, DB-yə tam CDN URL-i yazacağıq
+      const uniqueName = Date.now() + '-' + req.file.originalname
+      const r2Url = await uploadToR2(req.file.buffer, uniqueName, req.file.mimetype)
+      updateData.profile = r2Url
     }
 
     const updatedUser = await authService.updateUser(req.params.id, updateData)
 
-    // köhnə şəkli sil — yalnız yeni fayl yükləndikdə VƏ köhnə şəkil default olmadıqda
+    // köhnə şəkli R2-dən sil — yalnız yeni fayl yükləndikdə VƏ köhnə şəkil default olmadıqda
     if (req.file && user.profile) {
-      const oldPath = path.join(UPLOAD_DIR, user.profile)
-      fs.unlink(oldPath, (err) => {
-        if (err) console.error('Köhnə şəkil silinmədi:', err.message)
-      })
+      try {
+        await deleteFromR2(user.profile)
+      } catch (err) {
+        console.error('Köhnə şəkil silinmədi:', err.message)
+      }
     }
 
     return res.status(200).json({ success: true, data: updatedUser })

@@ -3,9 +3,10 @@ const path = require('path')
 const fs = require('fs/promises')
 const User = require('../models/user.model')
 const Product = require('../models/product.model')
-const { UPLOAD_DIR } = require('../middlewares/upload.middleware');
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000
+
+const { deleteFromR2 } = require('../uploadToR2') // öz yolunuza uyğun dəyişin
 
 async function cleanExpiredLockedUsers() {
   const cutoff = new Date(Date.now() - THREE_DAYS_MS)
@@ -23,15 +24,10 @@ async function cleanExpiredLockedUsers() {
 
   for (const product of productsToDelete) {
     for (const image of product.images || []) {
-      const imagePath = path.join(UPLOAD_DIR, image)
       try {
-        await fs.unlink(imagePath)
+        await deleteFromR2(image)
       } catch (err) {
-        if (err.code === 'ENOENT') {
-          console.warn('Fayl onsuz da mövcud deyil:', image)
-        } else {
-          console.error('Fayl silinmədi:', image, err)
-        }
+        console.error('Fayl silinmədi:', image, err.message)
       }
     }
   }

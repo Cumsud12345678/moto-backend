@@ -1,4 +1,5 @@
 // Express config
+require('dotenv').config()
 const express = require('express')
 const app = express()
 
@@ -7,8 +8,6 @@ const cors = require('cors')
 
 // Database
 const mongoDB = require('./config/db.config')
-
-require('dotenv').config()
 
 // User Routes
 const authRouter = require('./routes/auth.routes')
@@ -62,10 +61,7 @@ app.use(cors({
   credentials: true
 }));
 
-const { UPLOAD_DIR } = require('./middlewares/upload.middleware');
-
 app.use(express.json({ limit: '1mb' }))
-app.use("/uploads", express.static(UPLOAD_DIR));
 
 app.use(cookieParser())
 

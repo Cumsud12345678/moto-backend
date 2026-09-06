@@ -2,7 +2,7 @@ const adminAdsenseService = require('../../services/admin/adminAdsense.service')
 const formatDate = require("../../utils/dateFormatter");
 const path = require('path')
 const fs = require('fs/promises')
-const { UPLOAD_DIR } = require('../../middlewares/upload.middleware');
+const { deleteFromR2, uploadToR2 } = require('../../uploadToR2') // öz yolunuza uyğun dəyişin
 
 const getAdsense = async (req, res, next) => {
   try{
@@ -17,11 +17,16 @@ const getAdsense = async (req, res, next) => {
   }
 }
 
+
+
 const createAdsense = async (req, res, next) => {
   try{
+    const uniqueName = Date.now() + '-' + req.file.originalname
+    const imageUrl = await uploadToR2(req.file.buffer, uniqueName, req.file.mimetype)
+
     const newAdsense = await adminAdsenseService.createAdsense({
       ...req.body,
-      image: req.file.filename
+      image: imageUrl
     })
     res.status(200).json({success: true, data: newAdsense})
   }catch(err){
@@ -38,19 +43,20 @@ const clickAdsense = async (req, res, next) => {
   }
 }
 
+
+
 const deleteAdsense = async (req, res, next) => {
   try{
     const adsense = await adminAdsenseService.getAdsenseById(req.params.id)
     if(!adsense) {
-      res.status(404).json({message: 'Reklam tapilmadi'})
+      return res.status(404).json({message: 'Reklam tapilmadi'})
     }
 
     const success = await adminAdsenseService.deleteAdsense(req.params.id)
 
     if(success) {
-      const imagePath = path.join(UPLOAD_DIR, adsense.image)
       try {
-        await fs.unlink(imagePath)
+        await deleteFromR2(adsense.image)
       } catch (err) {
         console.log(err)
       }

@@ -14,8 +14,6 @@ const DeletedProduct = require('../models/delete.product.model')
 const fs = require('fs/promises');
 const path = require('path')
 const mongoose = require('mongoose')
-const { UPLOAD_DIR } = require('../middlewares/upload.middleware')
-
 
 // HOME PAGE
 const getAllProduct = async (userId, page = 1, limit = 10) => {
@@ -183,6 +181,8 @@ const getMetadata = async () => {
   }
 }
 
+const { deleteFromR2 } = require('../uploadToR2') // öz yolunuza uyğun dəyişin
+
 // PROFILE PAGE
 const createProduct = async (productData) => {
   return await Product.create(productData)
@@ -201,11 +201,8 @@ const deleteProduct = async (id, userId) => {
   })
 
   for(const image of product.images){
-    
-    const imagePath = path.join(UPLOAD_DIR, image)
-
     try{
-      await fs.unlink(imagePath)
+      await deleteFromR2(image)
     }catch(err){
       console.log(err)
     }

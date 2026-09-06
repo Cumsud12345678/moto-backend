@@ -6,7 +6,6 @@ const SystemMessage = require('../../models/systemMessage.model')
 const path = require('path')
 const fs = require('fs/promises')
 const { default: mongoose } = require('mongoose')
-const { UPLOAD_DIR } = require('../../middlewares/upload.middleware');
 
 const getProducts = async (skip, limit) => {
   const [products, total] = await Promise.all([
@@ -59,6 +58,8 @@ const getUserProducts = async (id) => {
   .populate('user')
 }
 
+const { deleteFromR2 } = require('../../uploadToR2') // öz yolunuza uyğun dəyişin
+
 // Delete Product
 const deleteProduct = async (id, text, adminId) => {
   const product = await Product.findOne({_id: id}).populate('user')
@@ -81,16 +82,10 @@ const deleteProduct = async (id, text, adminId) => {
   ])
 
   for(const image of product.images) {
-    const imagePath = path.join(UPLOAD_DIR, image)
-
     try{
-      await fs.unlink(imagePath)
+      await deleteFromR2(image)
     }catch(err){
-      if (err.code === 'ENOENT') {
-        console.warn('Fayl onsuz da mövcud deyil (silinməyə ehtiyac yoxdur):', image)
-      } else {
-        console.error('Fayl silinmədi:', image, err)
-      }
+      console.error('Fayl silinmədi:', image, err.message)
     }
   }
 

@@ -5,7 +5,6 @@ const DeletedUser = require('../../models/delete.user.model')
 const SystemMessage = require('../../models/systemMessage.model')
 const path = require('path')
 const fs = require('fs')
-const { UPLOAD_DIR } = require('../../middlewares/upload.middleware');
 
 const getUsers = async (skip, limit) => {
   const [users, total] = await Promise.all([
@@ -105,6 +104,8 @@ const resetWarningUser = async (id) => {
   return true
 }
 
+const { deleteFromR2 } = require('../../uploadToR2') // öz yolunuza uyğun dəyişin
+
 const deleteUser = async (id, desc) => {
   const user = await User.findById(id)
   await DeletedUser.create({
@@ -113,10 +114,11 @@ const deleteUser = async (id, desc) => {
     description: desc
   })
   if(user.profile){
-    const profilePath = path.join(UPLOAD_DIR, user.profile)
-    fs.unlink(profilePath, (err) => {
-      if (err) console.error('Köhnə şəkil silinmədi:', err.message)
-    })
+    try {
+      await deleteFromR2(user.profile)
+    } catch (err) {
+      console.error('Köhnə şəkil silinmədi:', err.message)
+    }
   }
   await Promise.all([
     User.findByIdAndDelete(id),

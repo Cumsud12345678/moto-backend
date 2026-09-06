@@ -2,9 +2,9 @@ const cron = require('node-cron');
 const path = require('path')
 const fs = require('fs/promises')
 const Product = require('../models/product.model')
-const { UPLOAD_DIR } = require('../middlewares/upload.middleware');
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
+const { deleteFromR2 } = require('../uploadToR2') // öz yolunuza uyğun dəyişin
 
 async function cleanExpiredDeactiveProducts(params) {
   const cutoff = new Date(Date.now() - SEVEN_DAYS_MS)
@@ -18,15 +18,10 @@ async function cleanExpiredDeactiveProducts(params) {
 
   for (const product of expirderProducts) {
     for (const image of product.images || []) {
-      const imagePath = path.join(UPLOAD_DIR, image)
       try {
-        await fs.unlink(imagePath)
+        await deleteFromR2(image)
       } catch (err) {
-        if (err.code === 'ENOENT') {
-          console.warn('Fayl onsuz da mövcud deyil:', image)
-        } else {
-          console.error('Fayl silinmədi:', image, err)
-        }
+        console.error('Fayl silinmədi:', image, err.message)
       }
     }
   }
