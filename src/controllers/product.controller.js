@@ -122,6 +122,9 @@ const createProduct = async (req, res, next) => {
     }
 
     // Bütün validasiyalardan keçdi
+
+    const imageUrls = []
+    
     const files = req.files || []
     const validFiles = files.filter(file => {
       if(!file.buffer || file.buffer.length === 0) {
