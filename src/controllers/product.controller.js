@@ -121,11 +121,25 @@ const createProduct = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Ən azı 1 şəkil əlavə edin' })
     }
 
-    // ✅ Bütün validasiyalardan keçdi — indi şəkilləri R2-yə yükləyirik
-    const imageUrls = []
-    for (const file of req.files) {
-      const uniqueName = Date.now() + '-' + file.originalname
-      const url = await uploadToR2(file.buffer, uniqueName, file.mimetype)
+    // Bütün validasiyalardan keçdi
+    const files = req.files || []
+    const validFiles = files.filter(file => {
+      if(!file.buffer || file.buffer.length === 0) {
+        console.warn(`0 byte dosya atlandi: ${file.originalname}`)
+        return false
+      }
+      return true
+    })
+
+    if(validFiles.length === 0 && files.length > 0) {
+      return res.status(400).json({
+        error: 'Yüklədiyiniz şəkillər boş gəldi. Zəhmət olmasa yenidən seçin.'
+      })
+    }
+
+    for (const file of validFiles) {
+      // const uniqueName = Date.now() + '-' + file.originalname
+      const url = await uploadToR2(file.buffer, file.originalname, file.mimetype)
       imageUrls.push(url)
     }
 
